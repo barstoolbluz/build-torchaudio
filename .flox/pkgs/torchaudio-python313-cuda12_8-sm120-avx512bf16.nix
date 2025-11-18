@@ -43,7 +43,7 @@ let
 
 in
   (python3Packages.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_8-sm120-avx512bf16";
 

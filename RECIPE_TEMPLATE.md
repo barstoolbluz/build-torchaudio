@@ -118,7 +118,7 @@ let
 
 in
   ({PYTHON_PACKAGES}.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-{PYTHON}-cuda{CUDA_MAJOR}_{CUDA_MINOR}-sm121-{CPU_ISA}";
 
@@ -207,7 +207,7 @@ let
 
 in
   ({PYTHON_PACKAGES}.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-{PYTHON}-cuda{CUDA_MAJOR}_{CUDA_MINOR}-{GPU_ARCH}-{CPU_ISA}";
 
@@ -291,7 +291,7 @@ let
 
 in
   ({PYTHON_PACKAGES}.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-{PYTHON}-cpu-{CPU_ISA}";
 
@@ -584,7 +584,7 @@ To create a new variant:
   - SM120 and older use Pattern Type B (without gpuArchSM)
 - TorchAudio depends on a matching PyTorch variant with the same GPU/CPU configuration
 - All GPU builds include custom PyTorch with matching optimizations
-- **IMPORTANT:** TorchAudio uses `pytorch = customPytorch` (NOT `torch = customPytorch` like TorchVision)
+- **IMPORTANT:** TorchAudio uses `torch = customPytorch` (the correct override parameter)
 - CUDA 13.0 is not available in nixpkgs yet (as of 2025-11-17)
 - Default `cudaPackages` points to CUDA 12.8
 - Default `python3Packages` points to Python 3.13

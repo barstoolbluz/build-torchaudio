@@ -174,7 +174,7 @@ customPytorch = (python3Packages.pytorch.override {
 
 # Build TorchAudio with custom PyTorch
 (python3Packages.torchaudio.override {
-  pytorch = customPytorch;  # NOTE: "pytorch", not "torch"
+  torch = customPytorch;
 }).overrideAttrs (oldAttrs: {
   pname = "torchaudio-python313-cuda12_8-sm120-avx512";
   ninjaFlags = [ "-j32" ];
@@ -211,7 +211,7 @@ customPytorch = (python3Packages.pytorch.override {
 
 in
   (python3Packages.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_8-sm120-avx512";
     ninjaFlags = [ "-j32" ];

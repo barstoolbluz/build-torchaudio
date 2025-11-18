@@ -40,7 +40,7 @@ let
 in
   # Override torchaudio to use our custom pytorch
   (python3Packages.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_8-sm121-armv8.2";
 

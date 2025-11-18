@@ -252,7 +252,7 @@ let
 
 in
   (python3Packages.torchaudio.override {
-    pytorch = customPytorch;
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_8-sm90-avx512";  # Updated name
 
@@ -283,7 +283,7 @@ in
 - Line 3 comment: Change to "SM90 (Hopper architecture - H100, L40S)"
 - Line 5: Change `gpuArchNum = "9.0"` (was "12.0")
 - Line 35: Change `pname = "torchaudio-python313-cuda12_8-sm90-avx512"`
-- Line 33: Use `pytorch = customPytorch;` (NOT `torch = customPytorch`)
+- Line 33: Use `torch = customPytorch;` (the correct override parameter for torchaudio)
 - Update echo statements and meta description to reference H100/L40S
 
 **CRITICAL:** Always include these in BOTH customPytorch and torchaudio sections:
