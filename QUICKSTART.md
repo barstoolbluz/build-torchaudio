@@ -2,7 +2,7 @@
 
 ## Choosing Your Variant
 
-**60 variants planned** (currently 12/60 implemented). Choose based on your hardware to match your PyTorch variant.
+**60 variants complete** (60/60 implemented - 100% ✅). Choose based on your hardware to match your PyTorch variant.
 
 **IMPORTANT:** TorchAudio requires a matching PyTorch variant. Install PyTorch first from `../build-pytorch/`.
 
@@ -18,13 +18,13 @@ nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader
 |----------|-------------|--------------|-----------------|--------|
 | DGX Spark | 12.1 | SM121 | `torchaudio-python313-cuda12_8-sm121-avx512` | ✅ Available (6 variants) |
 | RTX 5090 | 12.0 | SM120 | `torchaudio-python313-cuda12_8-sm120-avx512` | ✅ Available (6 variants) |
-| NVIDIA DRIVE Thor, Orin+ | 11.0 | SM110 | `torchaudio-python313-cuda12_8-sm110-avx512` | ❌ Not created yet |
-| B300 | 10.3 | SM103 | `torchaudio-python313-cuda12_8-sm103-avx512` | ❌ Not created yet |
-| B100, B200 | 10.0 | SM100 | `torchaudio-python313-cuda12_8-sm100-avx512` | ❌ Not created yet |
-| H100, L40S | 9.0 | SM90 | `torchaudio-python313-cuda12_8-sm90-avx512` | ❌ Not created yet |
-| RTX 4090, L40 | 8.9 | SM89 | `torchaudio-python313-cuda12_8-sm89-avx512` | ❌ Not created yet |
-| RTX 3090, A40 | 8.6 | SM86 | `torchaudio-python313-cuda12_8-sm86-avx512` | ❌ Not created yet |
-| A100, A30 | 8.0 | SM80 | `torchaudio-python313-cuda12_8-sm80-avx512` | ❌ Not created yet |
+| NVIDIA DRIVE Thor, Orin+ | 11.0 | SM110 | `torchaudio-python313-cuda12_8-sm110-avx512` | ✅ Available (6 variants) |
+| B300 | 10.3 | SM103 | `torchaudio-python313-cuda12_8-sm103-avx512` | ✅ Available (6 variants) |
+| B100, B200 | 10.0 | SM100 | `torchaudio-python313-cuda12_8-sm100-avx512` | ✅ Available (6 variants) |
+| H100, L40S | 9.0 | SM90 | `torchaudio-python313-cuda12_8-sm90-avx512` | ✅ Available (6 variants) |
+| RTX 4090, L40 | 8.9 | SM89 | `torchaudio-python313-cuda12_8-sm89-avx512` | ✅ Available (6 variants) |
+| RTX 3090, A40 | 8.6 | SM86 | `torchaudio-python313-cuda12_8-sm86-avx512` | ✅ Available (6 variants) |
+| A100, A30 | 8.0 | SM80 | `torchaudio-python313-cuda12_8-sm80-avx512` | ✅ Available (6 variants) |
 
 **CPU-only (no GPU)?**
 ```bash
@@ -32,38 +32,24 @@ nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader
 lscpu | grep -E 'avx512|sve'
 ```
 
-- See `avx512_bf16`? → Use `torchaudio-python313-cpu-avx512bf16` (NOT CREATED YET)
-- See `avx512_vnni`? → Use `torchaudio-python313-cpu-avx512vnni` (NOT CREATED YET)
-- See `avx512f`? → Use `torchaudio-python313-cpu-avx512` (NOT CREATED YET)
-- See `avx2` only? → Use `torchaudio-python313-cpu-avx2` (NOT CREATED YET)
-- See `sve2` (ARM)? → Use `torchaudio-python313-cpu-armv9` (NOT CREATED YET)
-- ARM without sve2? → Use `torchaudio-python313-cpu-armv8.2` (NOT CREATED YET)
+- See `avx512_bf16`? → Use `torchaudio-python313-cpu-avx512bf16` ✅
+- See `avx512_vnni`? → Use `torchaudio-python313-cpu-avx512vnni` ✅
+- See `avx512f`? → Use `torchaudio-python313-cpu-avx512` ✅
+- See `avx2` only? → Use `torchaudio-python313-cpu-avx2` ✅
+- See `sve2` (ARM)? → Use `torchaudio-python313-cpu-armv9` ✅
+- ARM without sve2? → Use `torchaudio-python313-cpu-armv8.2` ✅
 
 **Naming format:** `torchaudio-python313-{cuda12_8-smXX|cpu}-{cpu-isa}`
 
 ## Current Status
 
-### Available Variants (12/60)
+### All Variants Available (60/60) ✅ COMPLETE
 
-**SM121 (DGX Spark) - 6 variants:**
-- `torchaudio-python313-cuda12_8-sm121-avx2` (x86_64)
-- `torchaudio-python313-cuda12_8-sm121-avx512` (x86_64)
-- `torchaudio-python313-cuda12_8-sm121-avx512bf16` (x86_64)
-- `torchaudio-python313-cuda12_8-sm121-avx512vnni` (x86_64)
-- `torchaudio-python313-cuda12_8-sm121-armv8.2` (aarch64)
-- `torchaudio-python313-cuda12_8-sm121-armv9` (aarch64)
+All 60 TorchAudio variants are now available:
+- **9 GPU architectures** × 6 CPU ISAs = 54 GPU variants
+- **6 CPU-only variants** (all CPU ISAs)
 
-**SM120 (RTX 5090) - 6 variants:**
-- `torchaudio-python313-cuda12_8-sm120-avx2` (x86_64)
-- `torchaudio-python313-cuda12_8-sm120-avx512` (x86_64)
-- `torchaudio-python313-cuda12_8-sm120-avx512bf16` (x86_64)
-- `torchaudio-python313-cuda12_8-sm120-avx512vnni` (x86_64)
-- `torchaudio-python313-cuda12_8-sm120-armv8.2` (aarch64)
-- `torchaudio-python313-cuda12_8-sm120-armv9` (aarch64)
-
-### Not Yet Created (48/60)
-
-See **BUILD_MATRIX.md** for the complete list of remaining variants.
+See **BUILD_MATRIX.md** for the complete list of all variants.
 
 ## Building TorchAudio Variants
 
@@ -105,13 +91,15 @@ flox build torchaudio-python313-cuda12_8-sm121-avx512      # General performance
 flox build torchaudio-python313-cuda12_8-sm120-armv9       # Grace, Graviton3+
 flox build torchaudio-python313-cuda12_8-sm120-armv8.2     # Graviton2
 
-# Other GPU architectures - NOT CREATED YET (see "Adding More Variants" below)
-# flox build torchaudio-python313-cuda12_8-sm90-avx512    # H100 (TO CREATE)
-# flox build torchaudio-python313-cuda12_8-sm89-avx512    # RTX 4090 (TO CREATE)
-# flox build torchaudio-python313-cuda12_8-sm86-avx512    # RTX 3090 (TO CREATE)
+# Other GPU architectures - All available now!
+flox build torchaudio-python313-cuda12_8-sm90-avx512      # H100 ✅
+flox build torchaudio-python313-cuda12_8-sm89-avx512      # RTX 4090 ✅
+flox build torchaudio-python313-cuda12_8-sm86-avx512      # RTX 3090 ✅
+flox build torchaudio-python313-cuda12_8-sm80-avx512      # A100 ✅
 
-# CPU-only variants - NOT CREATED YET
-# flox build torchaudio-python313-cpu-avx2                 # CPU only (TO CREATE)
+# CPU-only variants - All available now!
+flox build torchaudio-python313-cpu-avx2                   # CPU only ✅
+flox build torchaudio-python313-cpu-avx512                 # CPU only ✅
 ```
 
 ### 3. Use the Built Package
@@ -210,12 +198,12 @@ See **RECIPE_TEMPLATE.md** for complete templates and variable lookup tables.
 
 ### Step 3: Copy and Modify
 
-#### Example: Creating SM90 variants (Pattern Type B)
+#### Example: Creating SM90 variants (Pattern Type A)
 
 ```bash
-# SM90 uses Pattern Type B (like SM120)
-# Copy an existing SM120 file as template
-cp .flox/pkgs/torchaudio-python313-cuda12_8-sm120-avx512.nix \
+# SM90 uses Pattern Type A (like SM121)
+# Copy an existing SM121 file as template
+cp .flox/pkgs/torchaudio-python313-cuda12_8-sm121-avx512.nix \
    .flox/pkgs/torchaudio-python313-cuda12_8-sm90-avx512.nix
 ```
 
@@ -223,8 +211,8 @@ Edit the new file:
 ```nix
 let
   # GPU target: SM90 (Hopper architecture - H100, L40S)
-  # PyTorch's CMake accepts numeric format (9.0) not sm_90
-  gpuArchNum = "9.0";  # Changed from "12.0"
+  gpuArchNum = "90";        # For CMAKE_CUDA_ARCHITECTURES
+  gpuArchSM = "sm_90";      # For TORCH_CUDA_ARCH_LIST
 
   # CPU optimization: AVX-512
   cpuFlags = [
@@ -237,7 +225,7 @@ let
 
   customPytorch = (python3Packages.pytorch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];  # Uses numeric format for SM90
+    gpuTargets = [ gpuArchSM ];  # Uses sm_90 format for SM90
   }).overrideAttrs (oldAttrs: {
     # CRITICAL: Prevent memory saturation during builds
     ninjaFlags = [ "-j32" ];
@@ -281,7 +269,8 @@ in
 
 **Key changes:**
 - Line 3 comment: Change to "SM90 (Hopper architecture - H100, L40S)"
-- Line 5: Change `gpuArchNum = "9.0"` (was "12.0")
+- Line 4: Change `gpuArchNum = "90"` (was "121")
+- Line 5: Change `gpuArchSM = "sm_90"` (was "sm_121")
 - Line 35: Change `pname = "torchaudio-python313-cuda12_8-sm90-avx512"`
 - Line 33: Use `torch = customPytorch;` (the correct override parameter for torchaudio)
 - Update echo statements and meta description to reference H100/L40S
@@ -311,19 +300,19 @@ flox build torchaudio-python313-cuda12_8-sm90-avx512
 
 ## Pattern Type Reference
 
-### Pattern Type A (SM121)
+### Pattern Type A (SM121, SM110, SM103, SM100, SM90, SM89, SM80)
 
 ```nix
-gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES
-gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST
-gpuTargets = [ gpuArchSM ]; # Uses sm_121
+gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES (or "110", "103", "100", "90", "89", "80")
+gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST (or "sm_110", "sm_103", etc.)
+gpuTargets = [ gpuArchSM ]; # Uses sm_XXX format
 ```
 
-### Pattern Type B (SM120 and older)
+### Pattern Type B (SM120, SM86)
 
 ```nix
-# PyTorch's CMake accepts numeric format (12.0/9.0/8.9/etc) not sm_XXX
-gpuArchNum = "12.0";       # Or "9.0", "8.9", "8.6", "8.0", etc.
+# PyTorch's CMake accepts numeric format (12.0/8.6) not sm_XXX
+gpuArchNum = "12.0";       # Or "8.6"
 # NO gpuArchSM variable
 gpuTargets = [ gpuArchNum ]; # Uses numeric format directly
 ```
@@ -337,12 +326,13 @@ gpuTargets = [ gpuArchNum ]; # Uses numeric format directly
 grep -E "gpuArchNum|gpuArchSM|gpuTargets" \
   ../build-pytorch/.flox/pkgs/pytorch-python313-cuda12_8-sm90-*.nix | head -5
 
-# Expected output shows Pattern Type B (decimal format)
-# gpuArchNum = "9.0";
-# gpuTargets = [ gpuArchNum ];
+# Expected output shows Pattern Type A (sm_XXX format)
+# gpuArchNum = "90";
+# gpuArchSM = "sm_90";
+# gpuTargets = [ gpuArchSM ];
 
 # 2. Use RECIPE_TEMPLATE.md to create all 6 SM90 variants
-# (Copy Pattern Type B template, substitute {GPU_ARCH_DECIMAL} = "9.0", etc.)
+# (Copy Pattern Type A template, substitute gpuArchNum = "90", gpuArchSM = "sm_90", etc.)
 
 # 3. Verify files created
 ls .flox/pkgs/torchaudio-python313-cuda12_8-sm90-*.nix
@@ -421,7 +411,7 @@ See the full documentation:
 
 **Problem:** TorchAudio variant doesn't exist yet.
 
-**Solution:** Check `BUILD_MATRIX.md` for current status. Only SM121 and SM120 variants (12/60) are currently created. Use `RECIPE_TEMPLATE.md` to create missing variants.
+**Solution:** All 60 variants are now available! Check `BUILD_MATRIX.md` for the complete list.
 
 ### Issue: "PyTorch dependency not found"
 
@@ -453,14 +443,14 @@ Then use the matching pattern for TorchAudio.
 |--------------|-----|---------|--------|-----------------|
 | SM121 | DGX Spark | Type A (sm_121) | ✅ Available | `torchaudio-python313-cuda12_8-sm121-avx512` |
 | SM120 | RTX 5090 | Type B (12.0) | ✅ Available | `torchaudio-python313-cuda12_8-sm120-avx512` |
-| SM110 | DRIVE Thor | Type B (11.0) | ❌ To create | - |
-| SM103 | B300 | Type B (10.3) | ❌ To create | - |
-| SM100 | B100/B200 | Type B (10.0) | ❌ To create | - |
-| SM90 | H100/L40S | Type B (9.0) | ❌ To create | - |
-| SM89 | RTX 4090 | Type B (8.9) | ❌ To create | - |
-| SM86 | RTX 3090 | Type B (8.6) | ❌ To create | - |
-| SM80 | A100/A30 | Type B (8.0) | ❌ To create | - |
-| CPU | None | N/A | ❌ To create | - |
+| SM110 | DRIVE Thor | Type A (sm_110) | ✅ Available | `torchaudio-python313-cuda12_8-sm110-avx512` |
+| SM103 | B300 | Type A (sm_103) | ✅ Available | `torchaudio-python313-cuda12_8-sm103-avx512` |
+| SM100 | B100/B200 | Type A (sm_100) | ✅ Available | `torchaudio-python313-cuda12_8-sm100-avx512` |
+| SM90 | H100/L40S | Type A (sm_90) | ✅ Available | `torchaudio-python313-cuda12_8-sm90-avx512` |
+| SM89 | RTX 4090 | Type A (sm_89) | ✅ Available | `torchaudio-python313-cuda12_8-sm89-avx512` |
+| SM86 | RTX 3090 | Type B (8.6) | ✅ Available | `torchaudio-python313-cuda12_8-sm86-avx512` |
+| SM80 | A100/A30 | Type A (sm_80) | ✅ Available | `torchaudio-python313-cuda12_8-sm80-avx512` |
+| CPU | None | N/A | ✅ Available | `torchaudio-python313-cpu-avx512` |
 
-**Pattern Type A:** `gpuArchSM = "sm_121"`, `gpuTargets = [ gpuArchSM ]`
-**Pattern Type B:** `gpuArchNum = "X.Y"`, `gpuTargets = [ gpuArchNum ]` (NO gpuArchSM)
+**Pattern Type A (7 archs):** `gpuArchSM = "sm_XXX"`, `gpuTargets = [ gpuArchSM ]`
+**Pattern Type B (2 archs):** `gpuArchNum = "X.Y"`, `gpuTargets = [ gpuArchNum ]` (NO gpuArchSM)
