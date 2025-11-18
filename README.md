@@ -57,18 +57,29 @@ flox build torchaudio-python313-cuda12_8-sm120-avx512
 
 ## Current Status
 
-### Implemented
+**Progress: 12/60 variants (20%)**
+
+### Implemented (12 variants)
+- ✅ **SM121 (DGX Spark)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
+- ✅ **SM120 (RTX 5090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
 - ✅ Flox environment initialized
 - ✅ Git repository initialized
-- ✅ Sample .nix file (SM120+AVX512)
 - ✅ Directory structure created
+- ✅ RECIPE_TEMPLATE.md created
+- ✅ BUILD_MATRIX.md created
+- ✅ QUICKSTART.md created
+- ✅ Memory saturation prevention implemented (requiredSystemFeatures)
 
-### TODO
-- ⏳ Generate all 54 CUDA variants (9 GPU archs × 6 CPU ISAs)
+### TODO (48 variants remaining)
+- ⏳ Generate SM110 variants (6 CPU ISAs)
+- ⏳ Generate SM103 variants (6 CPU ISAs)
+- ⏳ Generate SM100 variants (6 CPU ISAs)
+- ⏳ Generate SM90 variants (6 CPU ISAs)
+- ⏳ Generate SM89 variants (6 CPU ISAs)
+- ⏳ Generate SM86 variants (6 CPU ISAs)
+- ⏳ Generate SM80 variants (6 CPU ISAs)
 - ⏳ Generate 6 CPU-only variants
-- ⏳ Create build matrix documentation
 - ⏳ Add test scripts
-- ⏳ Create RECIPE_TEMPLATE.md for variant generation
 - ⏳ Configure proper PyTorch dependency resolution
 
 ## Package Naming Convention
@@ -139,12 +150,143 @@ flox build torchaudio-python313-cuda12_8-sm120-avx512
 ls -l result*
 ```
 
+## Build Configuration Details
+
+### TorchAudio Build Pattern
+
+TorchAudio variants use a custom build pattern similar to TorchVision:
+
+```nix
+# Create custom PyTorch with matching configuration
+customPytorch = (python3Packages.pytorch.override {
+  cudaSupport = true;
+  gpuTargets = [ gpuArchNum ];  # or gpuArchSM for SM121
+}).overrideAttrs (oldAttrs: {
+  ninjaFlags = [ "-j32" ];
+  requiredSystemFeatures = [ "big-parallel" ];
+
+  preConfigure = (oldAttrs.preConfigure or "") + ''
+    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export MAX_JOBS=32
+  '';
+});
+
+# Build TorchAudio with custom PyTorch
+(python3Packages.torchaudio.override {
+  pytorch = customPytorch;  # NOTE: "pytorch", not "torch"
+}).overrideAttrs (oldAttrs: {
+  pname = "torchaudio-python313-cuda12_8-sm120-avx512";
+  ninjaFlags = [ "-j32" ];
+  requiredSystemFeatures = [ "big-parallel" ];
+
+  preConfigure = (oldAttrs.preConfigure or "") + ''
+    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export MAX_JOBS=32
+  '';
+})
+```
+
+### Memory Saturation Prevention (CRITICAL!)
+
+**Problem:** TorchAudio builds trigger multiple concurrent derivations (PyTorch + TorchAudio + dependencies), each spawning unlimited CUDA compiler processes (`nvcc`, `cicc`, `ptxas`). On systems with `max-jobs = auto` and `cores = 0` (like Flox), this can saturate memory and spawn 95+ concurrent processes.
+
+**Solution:** Use `requiredSystemFeatures = [ "big-parallel" ];` in **BOTH** the customPytorch and torchaudio sections:
+
+```nix
+customPytorch = (python3Packages.pytorch.override {
+  cudaSupport = true;
+  gpuTargets = [ gpuArchNum ];
+}).overrideAttrs (oldAttrs: {
+  ninjaFlags = [ "-j32" ];
+  requiredSystemFeatures = [ "big-parallel" ];  # ← CRITICAL!
+
+  preConfigure = (oldAttrs.preConfigure or "") + ''
+    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export MAX_JOBS=32
+  '';
+});
+
+in
+  (python3Packages.torchaudio.override {
+    pytorch = customPytorch;
+  }).overrideAttrs (oldAttrs: {
+    pname = "torchaudio-python313-cuda12_8-sm120-avx512";
+    ninjaFlags = [ "-j32" ];
+    requiredSystemFeatures = [ "big-parallel" ];  # ← CRITICAL!
+
+    preConfigure = (oldAttrs.preConfigure or "") + ''
+      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export MAX_JOBS=32
+    '';
+  })
+```
+
+**Why this works:**
+- `requiredSystemFeatures = [ "big-parallel" ]` tells Nix daemon to serialize resource-heavy builds
+- Prevents concurrent builds of PyTorch + TorchAudio + dependencies
+- Controls CUDA compiler parallelism at the Nix orchestration level
+- `ninjaFlags = [ "-j32" ]` limits ninja build parallelism to 32 cores
+- `MAX_JOBS=32` controls Python setuptools parallelism
+
+**What doesn't work:**
+- Environment variables like `NIX_BUILD_CORES` or `CMAKE_BUILD_PARALLEL_LEVEL` are ineffective
+- CUDA compiler tools spawn their own processes outside ninja's control
+- Only Nix-level serialization with `requiredSystemFeatures` prevents concurrent derivation builds
+
+**All TorchAudio variants in this repository include this fix.** If creating new variants, see RECIPE_TEMPLATE.md for the correct pattern.
+
 ## Version Information
 
 - **TorchAudio**: Latest from nixpkgs (tracks PyTorch version)
 - **Python**: 3.13
 - **CUDA**: 12.8
 - **Platform**: Linux (x86_64-linux, aarch64-linux)
+
+## Documentation
+
+This project includes comprehensive documentation:
+
+- **[README.md](./README.md)** - This file (overview and reference)
+- **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide with examples
+- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix (12/60 variants tracked)
+- **[RECIPE_TEMPLATE.md](./RECIPE_TEMPLATE.md)** - Templates for creating new variants
+
+## GPU Architecture Patterns (CRITICAL!)
+
+TorchAudio must match the GPU architecture pattern used by the corresponding PyTorch build. There are **TWO different patterns**:
+
+### Pattern Type A: sm_XXX format (SM121)
+
+**Used by:** SM121 (and potentially future architectures)
+
+```nix
+gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES
+gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST
+gpuTargets = [ gpuArchSM ]; # Uses sm_121
+```
+
+### Pattern Type B: Decimal format (SM120 and older)
+
+**Used by:** SM120, SM110, SM103, SM100, SM90, SM89, SM86, SM80
+
+```nix
+# PyTorch's CMake accepts numeric format (12.0/9.0/8.9/etc) not sm_XXX
+gpuArchNum = "12.0";       # Or "11.0", "10.3", "10.0", "9.0", "8.9", "8.6", "8.0"
+# NO gpuArchSM variable
+gpuTargets = [ gpuArchNum ]; # Uses numeric format directly
+```
+
+**ALWAYS check PyTorch pattern before creating variants!**
+
+```bash
+# Verify pattern for any architecture
+grep -E "gpuArchNum|gpuArchSM|gpuTargets" \
+  ../build-pytorch/.flox/pkgs/pytorch-python313-cuda12_8-sm{ARCH}-*.nix | head -5
+```
 
 ## Relationship to build-pytorch
 
@@ -156,10 +298,10 @@ This project is a companion to `build-pytorch` and follows the same:
 
 ## Next Steps
 
-1. **Generate all variants**: Create .nix files for all 60 combinations
-2. **PyTorch dependency**: Implement proper dependency on `build-pytorch` packages
-3. **Documentation**: Create QUICKSTART.md, RECIPE_TEMPLATE.md, TEST_GUIDE.md
-4. **Testing**: Add test scripts for verifying builds
+1. **Generate remaining variants**: Create .nix files for SM110, SM103, SM100, SM90, SM89, SM86, SM80 (48 variants)
+2. **CPU-only variants**: Create 6 CPU-only variants
+3. **PyTorch dependency**: Implement proper dependency on `build-pytorch` packages
+4. **Testing**: Add test scripts for verifying builds (TEST_GUIDE.md)
 5. **CI/CD**: Add automated builds for all variants
 
 ## Contributing

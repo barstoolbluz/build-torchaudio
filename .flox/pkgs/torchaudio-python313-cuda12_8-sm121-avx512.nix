@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA Blackwell (SM120: RTX 5090) + AVX-512
-# Package name: torchaudio-python313-cuda12_8-sm120-avx512
+# TorchAudio optimized for NVIDIA DGX Spark (SM121) + AVX-512
+# Package name: torchaudio-python313-cuda12_8-sm121-avx512
 
 { python3Packages
 , lib
@@ -10,8 +10,9 @@
 }:
 
 let
-  # GPU target: SM120 (Blackwell architecture - RTX 5090)
-  gpuArchNum = "12.0";
+  # GPU target: SM121 (DGX Spark - specialized datacenter)
+  gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
   # CPU optimization: AVX-512
   cpuFlags = [
@@ -27,7 +28,7 @@ let
   # For now, using nixpkgs pytorch with similar configuration
   customPytorch = (python3Packages.pytorch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -45,7 +46,7 @@ in
   (python3Packages.torchaudio.override {
     pytorch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm120-avx512";
+    pname = "torchaudio-python313-cuda12_8-sm121-avx512";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -59,31 +60,35 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM120 (Blackwell: RTX 5090)"
+      echo "GPU Target: SM121 (DGX Spark - Specialized Datacenter)"
       echo "CPU Features: AVX-512"
-      echo "CUDA: 12.8 (Compute Capability 12.0)"
+      echo "CUDA: 12.8 (Compute Capability 12.1)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA RTX 5090 (SM120, Blackwell) + AVX-512";
+      description = "TorchAudio for NVIDIA DGX Spark (SM121) + AVX-512";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Blackwell architecture (SM120) - RTX 5090
+        - GPU: NVIDIA DGX Spark (SM121, Compute Capability 12.1)
         - CPU: x86-64 with AVX-512 instruction set
-        - CUDA: 12.8 with compute capability 12.0
+        - CUDA: 12.8
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: RTX 5090, Blackwell architecture GPUs
+        - GPU: DGX Spark specialized datacenter GPUs
         - CPU: Intel Skylake-X+ (2017+), AMD Zen 4+ (2022+)
         - Driver: NVIDIA 570+ required
 
         NOTE: This package depends on a matching PyTorch variant.
-        Ensure pytorch-python313-cuda12_8-sm120-avx512 is installed.
+        Ensure pytorch-python313-cuda12_8-sm121-avx512 is installed.
+
+        Choose this if: You have DGX Spark with modern datacenter CPUs.
+        For specialized workloads, consider avx512bf16 (BF16 training) or
+        avx512vnni (INT8 inference) variants.
       '';
       platforms = [ "x86_64-linux" ];
     };
