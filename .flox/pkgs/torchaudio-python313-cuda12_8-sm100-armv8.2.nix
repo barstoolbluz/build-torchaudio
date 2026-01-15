@@ -21,7 +21,7 @@ let
 
   # Custom PyTorch with matching GPU/CPU configuration
   # TODO: Reference the actual pytorch package from build-pytorch
-  customPytorch = (python3Packages.pytorch.override {
+  customPytorch = (python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {

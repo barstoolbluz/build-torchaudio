@@ -17,7 +17,7 @@ let
   ];
 
   # Custom PyTorch with matching CPU configuration
-  customPytorch = (python3Packages.pytorch.overrideAttrs (oldAttrs: {
+  customPytorch = (python3Packages.torch.overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
