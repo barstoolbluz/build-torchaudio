@@ -13,6 +13,40 @@ This project provides architecture-specific TorchAudio builds that match the GPU
 - **Architecture-Specific**: Each build targets specific compute capabilities
 - **Reproducible**: Managed with Flox/Nix for consistent builds
 
+## Version Compatibility Strategy
+
+For building older or specific versions of TorchAudio that require compatible PyTorch versions:
+
+### Nixpkgs Pinning Approach
+When the default nixpkgs has incompatible versions (e.g., PyTorch 2.8.0 with TorchAudio 2.9.1), we pin nixpkgs to a specific commit that contains compatible versions:
+
+```nix
+let
+  # Pin nixpkgs to specific commit with compatible versions
+  nixpkgs_pinned = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/COMMIT_HASH.tar.gz";
+  }) {
+    config = {
+      allowUnfree = true;  # Required for CUDA packages
+      cudaSupport = true;
+    };
+  };
+in
+  # Use nixpkgs_pinned.python3Packages instead of pkgs.python3Packages
+```
+
+**Current pinning**: Commit `fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3` provides:
+- PyTorch 2.8.0
+- TorchAudio 2.8.0
+- TorchVision 0.23.0
+
+To find compatible versions:
+1. Search nixpkgs history for commits containing all packages at desired versions
+2. Update all nix expressions to use the pinned nixpkgs
+3. Test builds to verify compatibility
+
+**Note**: The package name changed from `python3Packages.pytorch` to `python3Packages.torch` in newer nixpkgs versions.
+
 ## Architecture Support
 
 ### GPU Architectures (CUDA 12.8)
