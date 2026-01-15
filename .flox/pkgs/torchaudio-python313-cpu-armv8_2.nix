@@ -10,31 +10,42 @@
 }:
 
 let
+  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  nixpkgs_pinned = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
+    # You can add the sha256 here once known for reproducibility
+  }) {
+    config = {
+      allowUnfree = true;  # Required for CUDA packages
+      cudaSupport = true;
+    };
+  };
+
   # CPU optimization: ARMv8.2-A with FP16 and dot product
   cpuFlags = [
     "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with half-precision and dot product
   ];
 
   # Custom PyTorch with matching CPU configuration
-  customPytorch = (python3Packages.torch.overrideAttrs (oldAttrs: {
+  customPytorch = (nixpkgs_pinned.python3Packages.torch.overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
-    buildInputs = lib.filter (p: !(lib.hasPrefix "cuda" (p.pname or ""))) oldAttrs.buildInputs ++ [openblas];
-    nativeBuildInputs = lib.filter (p: p.pname or "" != "addDriverRunpath") oldAttrs.nativeBuildInputs;
+    buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or ""))) oldAttrs.buildInputs ++ [openblas];
+    nativeBuildInputs = nixpkgs_pinned.lib.filter (p: p.pname or "" != "addDriverRunpath") oldAttrs.nativeBuildInputs;
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
       export USE_CUDA=0
       export BLAS=OpenBLAS
-      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CXXFLAGS="$CXXFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
+      export CFLAGS="$CFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
       export MAX_JOBS=32
     '';
   }));
 
 in
-  (python3Packages.torchaudio.override {
+  (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;  # CRITICAL: "torch", not "pytorch"
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cpu-armv8.2";
@@ -42,8 +53,8 @@ in
     requiredSystemFeatures = [ "big-parallel" ];
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
-      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CXXFLAGS="$CXXFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
+      export CFLAGS="$CFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
       export MAX_JOBS=32
 
       echo "========================================="

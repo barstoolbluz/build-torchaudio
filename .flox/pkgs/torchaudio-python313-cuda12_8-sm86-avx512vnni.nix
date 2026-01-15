@@ -1,15 +1,20 @@
 # TorchAudio optimized for NVIDIA Ampere RTX 3090/A40 (SM86) + AVX-512 VNNI
 # Package name: torchaudio-python313-cuda12_8-sm86-avx512vnni
 
-{ python3Packages
-, lib
-, config
-, cudaPackages
-, addDriverRunpath
-, fetchPypi
-}:
+{ pkgs ? import <nixpkgs> {} }:
 
 let
+  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  nixpkgs_pinned = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
+    # You can add the sha256 here once known for reproducibility
+  }) {
+    config = {
+      allowUnfree = true;  # Required for CUDA packages
+      cudaSupport = true;
+    };
+  };
+
   # GPU target: SM86 (Ampere RTX 3090/A40)
   gpuArchNum = "8.6";
 
@@ -25,7 +30,7 @@ let
 
   # Custom PyTorch with matching GPU/CPU configuration
   # TODO: Reference the actual pytorch package from build-pytorch
-  customPytorch = (python3Packages.torch.override {
+  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchNum ];
   }).overrideAttrs (oldAttrs: {
@@ -34,14 +39,14 @@ let
     requiredSystemFeatures = [ "big-parallel" ];
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
-      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CXXFLAGS="$CXXFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
+      export CFLAGS="$CFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
       export MAX_JOBS=32
     '';
   });
 
 in
-  (python3Packages.torchaudio.override {
+  (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_8-sm86-avx512vnni";
@@ -51,8 +56,8 @@ in
     requiredSystemFeatures = [ "big-parallel" ];
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
-      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CXXFLAGS="$CXXFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
+      export CFLAGS="$CFLAGS ${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags}"
       export MAX_JOBS=32
 
       echo "========================================="
