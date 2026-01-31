@@ -1,10 +1,11 @@
-# TorchAudio optimized for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 VNNI
-# Package name: torchaudio-python313-cuda12_8-sm89-avx512vnni
+# TorchAudio optimized for NVIDIA DGX Spark (SM121) + ARMv8.2
+# Package name: torchaudio-python313-cuda12_8-sm121-armv8.2
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs with CUDA 13.0 (SM121 recognized natively)
+  # TODO: Pin to nixpkgs commit where cudaPackages defaults to CUDA 13.0
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,22 +16,17 @@ let
     };
   };
 
-  # GPU target: SM89 (Ada Lovelace RTX 4090/L40)
-  gpuArchNum = "89";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_89";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  # GPU target: SM121 (DGX Spark - specialized datacenter)
+  gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: AVX-512 with VNNI (Vector Neural Network Instructions)
+  # CPU optimization: ARMv8.2 with FP16 and dot product support
   cpuFlags = [
-    "-mavx512f"    # AVX-512 Foundation
-    "-mavx512dq"   # Doubleword and Quadword instructions
-    "-mavx512vl"   # Vector Length extensions
-    "-mavx512bw"   # Byte and Word instructions
-    "-mavx512vnni" # Vector Neural Network Instructions (INT8 acceleration)
-    "-mfma"        # Fused multiply-add
+    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with FP16 and dot product
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
+  # For now, using nixpkgs pytorch with similar configuration
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
@@ -47,10 +43,11 @@ let
   });
 
 in
+  # Override torchaudio to use our custom pytorch
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm89-avx512vnni";
+    pname = "torchaudio-python313-cuda12_8-sm121-armv8.2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -64,31 +61,36 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM89 (Ada Lovelace RTX 4090/L40)"
-      echo "CPU Features: AVX-512 + VNNI"
-      echo "CUDA: 12.8 (Compute Capability 8.9)"
+      echo "GPU Target: SM121 (DGX Spark - Specialized Datacenter)"
+      echo "CPU Features: ARMv8.2 + FP16 + Dot Product"
+      echo "CUDA: 12.8 (Compute Capability 12.1)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 VNNI";
+      description = "TorchAudio for NVIDIA DGX Spark (SM121) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ada Lovelace RTX 4090/L40 (SM89)
-        - CPU: x86-64 with AVX-512 VNNI instruction set
-        - CUDA: 12.8 with compute capability 8.9
+        - GPU: NVIDIA DGX Spark (SM121, Compute Capability 12.1)
+        - CPU: ARMv8.2 with FP16 and dot product extensions
+        - CUDA: 12.8
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA RTX 4090, RTX 4080, L40
-        - CPU: Intel Cascade Lake+ (2019+), AMD Zen 4+ (2022+)
-        - Driver: NVIDIA 525+ required
+        - GPU: DGX Spark specialized datacenter GPUs
+        - CPU: AWS Graviton2, NVIDIA Tegra Xavier+
+        - Driver: NVIDIA 570+ required
 
-        VNNI acceleration for INT8 inference on Ada Lovelace.
+        NOTE: This package depends on a matching PyTorch variant.
+        Ensure pytorch-python313-cuda12_8-sm121-armv8.2 is installed.
+
+        Choose this if: You have DGX Spark in ARM-based datacenter with
+        Graviton2 or similar ARMv8.2 processors. For newer ARM CPUs,
+        consider the armv9 variant for better performance.
       '';
-      platforms = [ "x86_64-linux" ];
+      platforms = [ "aarch64-linux" ];
     };
   })

@@ -1,10 +1,10 @@
-# TorchAudio optimized for NVIDIA Blackwell (SM120: RTX 5090) + AVX-512
-# Package name: torchaudio-python313-cuda12_8-sm120-avx512
+# TorchAudio optimized for NVIDIA DRIVE Thor (SM110) + ARMv8.2
+# Package name: torchaudio-python313-cuda13_0-sm110-armv8.2
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 13.0 (required for SM110)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,24 +15,19 @@ let
     };
   };
 
-  # GPU target: SM120 (Blackwell architecture - RTX 5090)
-  gpuArchNum = "12.0";
+  # GPU target: SM110 (NVIDIA DRIVE Thor/Orin+ - Automotive/Edge)
+  gpuArchNum = "110";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_110";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: AVX-512
+  # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
-    "-mavx512f"    # AVX-512 Foundation
-    "-mavx512dq"   # Doubleword and Quadword instructions
-    "-mavx512vl"   # Vector Length extensions
-    "-mavx512bw"   # Byte and Word instructions
-    "-mfma"        # Fused multiply-add
+    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with half-precision and dot product
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
-  # For now, using nixpkgs pytorch with similar configuration
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -46,11 +41,10 @@ let
   });
 
 in
-  # Override torchaudio to use our custom pytorch
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm120-avx512";
+    pname = "torchaudio-python313-cuda13_0-sm110-armv8.2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -64,32 +58,31 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM120 (Blackwell: RTX 5090)"
-      echo "CPU Features: AVX-512"
-      echo "CUDA: 12.8 (Compute Capability 12.0)"
+      echo "GPU Target: SM110 (NVIDIA DRIVE Thor/Orin+)"
+      echo "CPU Features: ARMv8.2 + FP16 + DotProd"
+      echo "CUDA: 12.8 (Compute Capability 11.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA RTX 5090 (SM120, Blackwell) + AVX-512";
+      description = "TorchAudio for NVIDIA DRIVE Thor (SM110) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Blackwell architecture (SM120) - RTX 5090
-        - CPU: x86-64 with AVX-512 instruction set
-        - CUDA: 12.8 with compute capability 12.0
+        - GPU: NVIDIA DRIVE Thor/Orin+ (SM110) - Automotive/Edge AI
+        - CPU: ARMv8.2 with FP16 and dot product instructions
+        - CUDA: 12.8 with compute capability 11.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: RTX 5090, Blackwell architecture GPUs
-        - CPU: Intel Skylake-X+ (2017+), AMD Zen 4+ (2022+)
+        - GPU: NVIDIA DRIVE Thor, Orin+ (Automotive/Embedded platforms)
+        - CPU: AWS Graviton2, NVIDIA Tegra Orin
         - Driver: NVIDIA 570+ required
 
-        NOTE: This package depends on a matching PyTorch variant.
-        Ensure pytorch-python313-cuda12_8-sm120-avx512 is installed.
+        Optimized for ARM-based automotive and embedded platforms.
       '';
-      platforms = [ "x86_64-linux" ];
+      platforms = [ "aarch64-linux" ];
     };
   })

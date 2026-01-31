@@ -1,10 +1,10 @@
-# TorchAudio optimized for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 BF16
-# Package name: torchaudio-python313-cuda12_8-sm89-avx512bf16
+# TorchAudio optimized for NVIDIA DRIVE Thor (SM110) + AVX2
+# Package name: torchaudio-python313-cuda13_0-sm110-avx2
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 13.0 (required for SM110)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,22 +15,18 @@ let
     };
   };
 
-  # GPU target: SM89 (Ada Lovelace RTX 4090/L40)
-  gpuArchNum = "89";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_89";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  # GPU target: SM110 (NVIDIA DRIVE Thor/Orin+ - Automotive/Edge)
+  gpuArchNum = "110";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_110";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: AVX-512 with BF16 (Brain Float 16)
+  # CPU optimization: AVX2 (broad x86-64 compatibility)
   cpuFlags = [
-    "-mavx512f"    # AVX-512 Foundation
-    "-mavx512dq"   # Doubleword and Quadword instructions
-    "-mavx512vl"   # Vector Length extensions
-    "-mavx512bw"   # Byte and Word instructions
-    "-mavx512bf16" # Brain Float 16 instructions (ML training acceleration)
+    "-mavx2"       # AVX2 instructions
     "-mfma"        # Fused multiply-add
+    "-mf16c"       # Half-precision conversions
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
@@ -50,7 +46,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm89-avx512bf16";
+    pname = "torchaudio-python313-cuda13_0-sm110-avx2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -64,30 +60,31 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM89 (Ada Lovelace RTX 4090/L40)"
-      echo "CPU Features: AVX-512 + BF16"
-      echo "CUDA: 12.8 (Compute Capability 8.9)"
+      echo "GPU Target: SM110 (NVIDIA DRIVE Thor/Orin+)"
+      echo "CPU Features: AVX2"
+      echo "CUDA: 12.8 (Compute Capability 11.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 BF16";
+      description = "TorchAudio for NVIDIA DRIVE Thor (SM110) + AVX2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ada Lovelace RTX 4090/L40 (SM89)
-        - CPU: x86-64 with AVX-512 BF16 instruction set
-        - CUDA: 12.8 with compute capability 8.9
+        - GPU: NVIDIA DRIVE Thor/Orin+ (SM110) - Automotive/Edge AI
+        - CPU: x86-64 with AVX2 instruction set (broad compatibility)
+        - CUDA: 12.8 with compute capability 11.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA RTX 4090, RTX 4080, L40
-        - CPU: Intel Sapphire Rapids+ (2023+), AMD Zen 4+ (2022+)
-        - Driver: NVIDIA 525+ required
+        - GPU: NVIDIA DRIVE Thor, Orin+ (Automotive/Embedded platforms)
+        - CPU: Intel Haswell+ (2013+), AMD Excavator+ (2015+)
+        - Driver: NVIDIA 570+ required
 
-        BF16 acceleration for ML training on Ada Lovelace.
+        Choose this if: You need broad x86-64 CPU compatibility with DRIVE Thor.
+        For newer CPUs, consider avx512 variants for better performance.
       '';
       platforms = [ "x86_64-linux" ];
     };
