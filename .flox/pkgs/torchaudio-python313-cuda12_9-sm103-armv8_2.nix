@@ -1,10 +1,10 @@
-# TorchAudio optimized for NVIDIA Ampere A100/A30 (SM80) + AVX-512 VNNI
-# Package name: torchaudio-python313-cuda12_8-sm80-avx512vnni
+# TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + ARMv8.2
+# Package name: torchaudio-python313-cuda12_9-sm103-armv8.2
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 12.9 (required for SM103)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,22 +15,16 @@ let
     };
   };
 
-  # GPU target: SM80 (Ampere A100/A30 - Datacenter)
-  gpuArchNum = "80";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_80";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  # GPU target: SM103 (Blackwell B300 - Datacenter)
+  gpuArchNum = "103";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_103";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: AVX-512 with VNNI (Vector Neural Network Instructions)
+  # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
-    "-mavx512f"    # AVX-512 Foundation
-    "-mavx512dq"   # Doubleword and Quadword instructions
-    "-mavx512vl"   # Vector Length extensions
-    "-mavx512bw"   # Byte and Word instructions
-    "-mavx512vnni" # Vector Neural Network Instructions (INT8 acceleration)
-    "-mfma"        # Fused multiply-add
+    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with half-precision and dot product
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
@@ -50,7 +44,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm80-avx512vnni";
+    pname = "torchaudio-python313-cuda12_9-sm103-armv8.2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -64,31 +58,31 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM80 (Ampere A100/A30 Datacenter)"
-      echo "CPU Features: AVX-512 + VNNI"
-      echo "CUDA: 12.8 (Compute Capability 8.0)"
+      echo "GPU Target: SM103 (Blackwell B300 Datacenter)"
+      echo "CPU Features: ARMv8.2 + FP16 + DotProd"
+      echo "CUDA: 12.8 (Compute Capability 10.3)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ampere A100/A30 (SM80) + AVX-512 VNNI";
+      description = "TorchAudio for NVIDIA Blackwell B300 (SM103) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ampere A100/A30 (SM80) - Datacenter
-        - CPU: x86-64 with AVX-512 VNNI instruction set
-        - CUDA: 12.8 with compute capability 8.0
+        - GPU: NVIDIA Blackwell B300 (SM103) - Datacenter
+        - CPU: ARMv8.2 with FP16 and dot product instructions
+        - CUDA: 12.8 with compute capability 10.3
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA A100, A30 datacenter GPUs
-        - CPU: Intel Cascade Lake+ (2019+), AMD Zen 4+ (2022+)
-        - Driver: NVIDIA 450+ required
+        - GPU: NVIDIA Blackwell B300 datacenter GPUs
+        - CPU: AWS Graviton2, NVIDIA Grace platforms
+        - Driver: NVIDIA 570+ required
 
-        VNNI acceleration for INT8 inference on Ampere datacenter.
+        Optimized for ARM-based datacenter platforms.
       '';
-      platforms = [ "x86_64-linux" ];
+      platforms = [ "aarch64-linux" ];
     };
   })

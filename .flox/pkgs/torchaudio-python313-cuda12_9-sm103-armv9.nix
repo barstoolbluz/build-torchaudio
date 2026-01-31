@@ -1,10 +1,10 @@
 # TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + ARMv9
-# Package name: torchaudio-python313-cuda12_8-sm103-armv9
+# Package name: torchaudio-python313-cuda12_9-sm103-armv9
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 12.9 (required for SM103)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -25,7 +25,6 @@ let
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
@@ -45,7 +44,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm103-armv9";
+    pname = "torchaudio-python313-cuda12_9-sm103-armv9";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];

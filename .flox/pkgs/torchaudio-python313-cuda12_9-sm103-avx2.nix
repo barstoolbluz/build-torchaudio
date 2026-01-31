@@ -1,10 +1,10 @@
-# TorchAudio optimized for NVIDIA Ampere RTX 3090/A40 (SM86) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_8-sm86-armv8.2
+# TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + AVX2
+# Package name: torchaudio-python313-cuda12_9-sm103-avx2
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 12.9 (required for SM103)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,19 +15,21 @@ let
     };
   };
 
-  # GPU target: SM86 (Ampere RTX 3090/A40)
-  gpuArchNum = "8.6";
+  # GPU target: SM103 (Blackwell B300 - Datacenter)
+  gpuArchNum = "103";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_103";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: ARMv8.2 with FP16 and dot product
+  # CPU optimization: AVX2 (broad x86-64 compatibility)
   cpuFlags = [
-    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with half-precision and dot product
+    "-mavx2"       # AVX2 instructions
+    "-mfma"        # Fused multiply-add
+    "-mf16c"       # Half-precision conversions
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -44,7 +46,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm86-armv8.2";
+    pname = "torchaudio-python313-cuda12_9-sm103-avx2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -58,31 +60,32 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM86 (Ampere RTX 3090/A40)"
-      echo "CPU Features: ARMv8.2 + FP16 + DotProd"
-      echo "CUDA: 12.8 (Compute Capability 8.6)"
+      echo "GPU Target: SM103 (Blackwell B300 Datacenter)"
+      echo "CPU Features: AVX2"
+      echo "CUDA: 12.8 (Compute Capability 10.3)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ampere RTX 3090/A40 (SM86) + ARMv8.2";
+      description = "TorchAudio for NVIDIA Blackwell B300 (SM103) + AVX2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ampere RTX 3090/A40 (SM86)
-        - CPU: ARMv8.2 with FP16 and dot product instructions
-        - CUDA: 12.8 with compute capability 8.6
+        - GPU: NVIDIA Blackwell B300 (SM103) - Datacenter
+        - CPU: x86-64 with AVX2 instruction set (broad compatibility)
+        - CUDA: 12.8 with compute capability 10.3
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA RTX 3090, RTX 3080 Ti, A5000, A40
-        - CPU: AWS Graviton2, NVIDIA Grace platforms
-        - Driver: NVIDIA 470+ required
+        - GPU: NVIDIA Blackwell B300 datacenter GPUs
+        - CPU: Intel Haswell+ (2013+), AMD Excavator+ (2015+)
+        - Driver: NVIDIA 570+ required
 
-        Optimized for ARM-based platforms with Ampere GPUs.
+        Choose this if: You need broad x86-64 CPU compatibility with Blackwell B300.
+        For newer CPUs, consider avx512 variants for better performance.
       '';
-      platforms = [ "aarch64-linux" ];
+      platforms = [ "x86_64-linux" ];
     };
   })

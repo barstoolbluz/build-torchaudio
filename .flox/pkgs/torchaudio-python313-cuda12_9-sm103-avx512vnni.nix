@@ -1,10 +1,10 @@
-# TorchAudio optimized for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 VNNI
-# Package name: torchaudio-python313-cuda12_8-sm89-avx512vnni
+# TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + AVX-512 VNNI
+# Package name: torchaudio-python313-cuda12_9-sm103-avx512vnni
 
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
+  # Import nixpkgs at a specific revision with CUDA 12.9 (required for SM103)
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
     # You can add the sha256 here once known for reproducibility
@@ -15,9 +15,9 @@ let
     };
   };
 
-  # GPU target: SM89 (Ada Lovelace RTX 4090/L40)
-  gpuArchNum = "89";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_89";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  # GPU target: SM103 (Blackwell B300 - Datacenter)
+  gpuArchNum = "103";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_103";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
   # CPU optimization: AVX-512 with VNNI (Vector Neural Network Instructions)
   cpuFlags = [
@@ -30,7 +30,6 @@ let
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
-  # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
@@ -50,7 +49,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm89-avx512vnni";
+    pname = "torchaudio-python313-cuda12_9-sm103-avx512vnni";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -64,30 +63,30 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM89 (Ada Lovelace RTX 4090/L40)"
+      echo "GPU Target: SM103 (Blackwell B300 Datacenter)"
       echo "CPU Features: AVX-512 + VNNI"
-      echo "CUDA: 12.8 (Compute Capability 8.9)"
+      echo "CUDA: 12.8 (Compute Capability 10.3)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512 VNNI";
+      description = "TorchAudio for NVIDIA Blackwell B300 (SM103) + AVX-512 VNNI";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ada Lovelace RTX 4090/L40 (SM89)
+        - GPU: NVIDIA Blackwell B300 (SM103) - Datacenter
         - CPU: x86-64 with AVX-512 VNNI instruction set
-        - CUDA: 12.8 with compute capability 8.9
+        - CUDA: 12.8 with compute capability 10.3
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA RTX 4090, RTX 4080, L40
+        - GPU: NVIDIA Blackwell B300 datacenter GPUs
         - CPU: Intel Cascade Lake+ (2019+), AMD Zen 4+ (2022+)
-        - Driver: NVIDIA 525+ required
+        - Driver: NVIDIA 570+ required
 
-        VNNI acceleration for INT8 inference on Ada Lovelace.
+        VNNI acceleration for INT8 inference workloads.
       '';
       platforms = [ "x86_64-linux" ];
     };
