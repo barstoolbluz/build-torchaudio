@@ -1,5 +1,5 @@
 # TorchAudio optimized for NVIDIA DGX Spark (SM121) + ARMv8.2
-# Package name: torchaudio-python313-cuda13_0-sm121-armv8.2
+# Package name: torchaudio-python313-cuda13_0-sm121-armv8_2
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -47,7 +47,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda13_0-sm121-armv8.2";
+    pname = "torchaudio-python313-cuda13_0-sm121-armv8_2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -85,7 +85,7 @@ in
         - Driver: NVIDIA 570+ required
 
         NOTE: This package depends on a matching PyTorch variant.
-        Ensure pytorch-python313-cuda13_0-sm121-armv8.2 is installed.
+        Ensure pytorch-python313-cuda13_0-sm121-armv8_2 is installed.
 
         Choose this if: You have DGX Spark in ARM-based datacenter with
         Graviton2 or similar ARMv8.2 processors. For newer ARM CPUs,

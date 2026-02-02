@@ -1,5 +1,5 @@
 # TorchAudio optimized for NVIDIA DRIVE Thor (SM110) + ARMv8.2
-# Package name: torchaudio-python313-cuda13_0-sm110-armv8.2
+# Package name: torchaudio-python313-cuda13_0-sm110-armv8_2
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -44,7 +44,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda13_0-sm110-armv8.2";
+    pname = "torchaudio-python313-cuda13_0-sm110-armv8_2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
