@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA Ampere A100/A30 (SM80) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_8-sm80-armv8.2
+# TorchAudio optimized for NVIDIA Blackwell B100/B200 (SM100) + ARMv8.2
+# Package name: torchaudio-python313-cuda12_8-sm100-armv8_2
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -15,9 +15,9 @@ let
     };
   };
 
-  # GPU target: SM80 (Ampere A100/A30 - Datacenter)
-  gpuArchNum = "80";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_80";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  # GPU target: SM100 (Blackwell B100/B200 - Datacenter)
+  gpuArchNum = "100";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_100";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
   # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
@@ -45,7 +45,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm80-armv8.2";
+    pname = "torchaudio-python313-cuda12_8-sm100-armv8_2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -59,30 +59,30 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM80 (Ampere A100/A30 Datacenter)"
+      echo "GPU Target: SM100 (Blackwell B100/B200 Datacenter)"
       echo "CPU Features: ARMv8.2 + FP16 + DotProd"
-      echo "CUDA: 12.8 (Compute Capability 8.0)"
+      echo "CUDA: 12.8 (Compute Capability 10.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ampere A100/A30 (SM80) + ARMv8.2";
+      description = "TorchAudio for NVIDIA Blackwell B100/B200 (SM100) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ampere A100/A30 (SM80) - Datacenter
+        - GPU: NVIDIA Blackwell B100/B200 (SM100) - Datacenter
         - CPU: ARMv8.2 with FP16 and dot product instructions
-        - CUDA: 12.8 with compute capability 8.0
+        - CUDA: 12.8 with compute capability 10.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA A100, A30 datacenter GPUs
+        - GPU: NVIDIA Blackwell B100/B200 datacenter GPUs
         - CPU: AWS Graviton2, NVIDIA Grace platforms
-        - Driver: NVIDIA 450+ required
+        - Driver: NVIDIA 570+ required
 
-        Optimized for ARM-based datacenter platforms with Ampere.
+        Optimized for ARM-based datacenter platforms.
       '';
       platforms = [ "aarch64-linux" ];
     };

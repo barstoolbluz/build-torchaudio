@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA Ampere RTX 3090/A40 (SM86) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_8-sm86-armv8.2
+# TorchAudio optimized for NVIDIA Hopper H100/L40S (SM90) + ARMv8.2
+# Package name: torchaudio-python313-cuda12_8-sm90-armv8_2
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -15,8 +15,9 @@ let
     };
   };
 
-  # GPU target: SM86 (Ampere RTX 3090/A40)
-  gpuArchNum = "8.6";
+  # GPU target: SM90 (Hopper H100/L40S)
+  gpuArchNum = "90";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_90";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
   # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
@@ -27,7 +28,7 @@ let
   # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -44,7 +45,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm86-armv8.2";
+    pname = "torchaudio-python313-cuda12_8-sm90-armv8_2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -58,30 +59,30 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM86 (Ampere RTX 3090/A40)"
+      echo "GPU Target: SM90 (Hopper H100/L40S)"
       echo "CPU Features: ARMv8.2 + FP16 + DotProd"
-      echo "CUDA: 12.8 (Compute Capability 8.6)"
+      echo "CUDA: 12.8 (Compute Capability 9.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA Ampere RTX 3090/A40 (SM86) + ARMv8.2";
+      description = "TorchAudio for NVIDIA Hopper H100/L40S (SM90) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Ampere RTX 3090/A40 (SM86)
+        - GPU: NVIDIA Hopper H100/L40S (SM90)
         - CPU: ARMv8.2 with FP16 and dot product instructions
-        - CUDA: 12.8 with compute capability 8.6
+        - CUDA: 12.8 with compute capability 9.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: NVIDIA RTX 3090, RTX 3080 Ti, A5000, A40
+        - GPU: NVIDIA H100, H800, L40S
         - CPU: AWS Graviton2, NVIDIA Grace platforms
-        - Driver: NVIDIA 470+ required
+        - Driver: NVIDIA 525+ required
 
-        Optimized for ARM-based platforms with Ampere GPUs.
+        Optimized for ARM-based platforms with Hopper GPUs.
       '';
       platforms = [ "aarch64-linux" ];
     };

@@ -1,5 +1,5 @@
 # TorchAudio CPU-only optimized for ARMv8.2
-# Package name: torchaudio-python313-cpu-armv8.2
+# Package name: torchaudio-python313-cpu-armv8_2
 #
 # ARM server build for AWS Graviton2, general ARM servers
 # Hardware: ARM Neoverse N1, Cortex-A75+, Graviton2
@@ -48,7 +48,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;  # CRITICAL: "torch", not "pytorch"
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cpu-armv8.2";
+    pname = "torchaudio-python313-cpu-armv8_2";
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 

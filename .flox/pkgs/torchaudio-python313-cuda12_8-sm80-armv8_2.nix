@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA Blackwell (SM120: RTX 5090) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_8-sm120-armv8.2
+# TorchAudio optimized for NVIDIA Ampere A100/A30 (SM80) + ARMv8.2
+# Package name: torchaudio-python313-cuda12_8-sm80-armv8_2
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -15,20 +15,20 @@ let
     };
   };
 
-  # GPU target: SM120 (Blackwell architecture - RTX 5090)
-  # PyTorch's CMake accepts numeric format (12.0) not sm_120
-  gpuArchNum = "12.0";
+  # GPU target: SM80 (Ampere A100/A30 - Datacenter)
+  gpuArchNum = "80";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
+  gpuArchSM = "sm_80";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: ARMv8.2 with FP16 and dot product support
+  # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
-    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with FP16 and dot product
+    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with half-precision and dot product
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
   # TODO: Reference the actual pytorch package from build-pytorch
   customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
     cudaSupport = true;
-    gpuTargets = [ gpuArchNum ];
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -45,7 +45,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm120-armv8.2";
+    pname = "torchaudio-python313-cuda12_8-sm80-armv8_2";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -59,31 +59,30 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: SM120 (Blackwell: RTX 5090)"
-      echo "CPU Features: ARMv8.2 + FP16 + Dot Product"
-      echo "CUDA: 12.8 (Compute Capability 12.0)"
+      echo "GPU Target: SM80 (Ampere A100/A30 Datacenter)"
+      echo "CPU Features: ARMv8.2 + FP16 + DotProd"
+      echo "CUDA: 12.8 (Compute Capability 8.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA RTX 5090 (SM120, Blackwell) + ARMv8.2";
+      description = "TorchAudio for NVIDIA Ampere A100/A30 (SM80) + ARMv8.2";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA Blackwell architecture (SM120) - RTX 5090
-        - CPU: ARMv8.2 with FP16 and dot product extensions
-        - CUDA: 12.8
+        - GPU: NVIDIA Ampere A100/A30 (SM80) - Datacenter
+        - CPU: ARMv8.2 with FP16 and dot product instructions
+        - CUDA: 12.8 with compute capability 8.0
         - Python: 3.13
+        - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
-        - GPU: RTX 5090, Blackwell architecture GPUs
-        - CPU: AWS Graviton2, NVIDIA Tegra Xavier+
-        - Driver: NVIDIA 570+ required
+        - GPU: NVIDIA A100, A30 datacenter GPUs
+        - CPU: AWS Graviton2, NVIDIA Grace platforms
+        - Driver: NVIDIA 450+ required
 
-        Choose this if: You have RTX 5090 in ARM-based system with
-        Graviton2 or similar ARMv8.2 processors. For newer ARM CPUs,
-        consider the armv9 variant for better performance.
+        Optimized for ARM-based datacenter platforms with Ampere.
       '';
       platforms = [ "aarch64-linux" ];
     };
