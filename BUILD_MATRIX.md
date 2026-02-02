@@ -75,7 +75,7 @@ Build Variant = f(Python_Version, GPU_Architecture, CPU_ISA, CUDA_Toolkit)
 | **ARMv9** | `-march=armv9-a+sve2` | Neoverse V1/V2, Cortex-X2+, Graviton3+ | ✅ Implemented (SM121, SM120) |
 | **ARMv8.2** | `-march=armv8.2-a+fp16+dotprod` | Neoverse N1, Cortex-A75+, Graviton2 | ✅ Implemented (SM121, SM120) |
 
-**Naming:** `avx512bf16`, `avx512vnni`, `avx512`, `avx2`, `armv9`, `armv8.2`
+**Naming:** `avx512bf16`, `avx512vnni`, `avx512`, `avx2`, `armv9`, `armv8_2`
 
 **Example:** `torchaudio-python313-cuda12_8-sm120-avx512`
 
@@ -98,28 +98,28 @@ Build Variant = f(Python_Version, GPU_Architecture, CPU_ISA, CUDA_Toolkit)
 
 ### Total Build Matrix
 
-**Total possible variants:** 60
-- **GPU builds:** 54 (9 GPU architectures × 6 CPU ISAs)
-  - x86-64: 36 (9 GPU × 4 CPU ISAs)
-  - ARM: 18 (9 GPU × 2 CPU ISAs)
+**Variants on `main` branch:** 43
+- **GPU builds:** 37 (6 GPU architectures × 6 CPU ISAs + 1 SM61 variant)
+  - x86-64: 25 (6 GPU × 4 CPU ISAs + 1 SM61)
+  - ARM: 12 (6 GPU × 2 CPU ISAs)
 - **CPU-only builds:** 6 (6 CPU ISAs)
 
-**Currently implemented:** 60/60 (100% ✅ COMPLETE)
+**Total across all branches:** 61 (43 on `main` + 12 on `cuda-13_0` + 6 on `cuda-12_9`)
 
 ### Implemented Variants
 
-#### SM121 Variants (6/6) ✅ COMPLETE
+#### SM121 Variants (6/6) ✅ COMPLETE — `cuda-13_0` branch
 
-All SM121 variants use **Pattern Type A** (with gpuArchSM):
+All SM121 variants use **Pattern Type A** (with gpuArchSM). Available on the `cuda-13_0` branch (CUDA 13.0):
 
 | Package Name | CPU ISA | Platform | Status |
 |-------------|---------|----------|--------|
-| `torchaudio-python313-cuda12_8-sm121-avx2` | AVX2 | x86_64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm121-avx512` | AVX-512 | x86_64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm121-avx512bf16` | AVX-512 BF16 | x86_64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm121-avx512vnni` | AVX-512 VNNI | x86_64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm121-armv8.2` | ARMv8.2-A | aarch64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm121-armv9` | ARMv9-A | aarch64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-avx2` | AVX2 | x86_64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-avx512` | AVX-512 | x86_64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-avx512bf16` | AVX-512 BF16 | x86_64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-avx512vnni` | AVX-512 VNNI | x86_64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-armv8_2` | ARMv8.2-A | aarch64-linux | ✅ Created |
+| `torchaudio-python313-cuda13_0-sm121-armv9` | ARMv9-A | aarch64-linux | ✅ Created |
 
 **GPU Pattern (SM121):**
 ```nix
@@ -138,7 +138,7 @@ All SM120 variants use **Pattern Type B** (without gpuArchSM):
 | `torchaudio-python313-cuda12_8-sm120-avx512` | AVX-512 | x86_64-linux | ✅ Created |
 | `torchaudio-python313-cuda12_8-sm120-avx512bf16` | AVX-512 BF16 | x86_64-linux | ✅ Created |
 | `torchaudio-python313-cuda12_8-sm120-avx512vnni` | AVX-512 VNNI | x86_64-linux | ✅ Created |
-| `torchaudio-python313-cuda12_8-sm120-armv8.2` | ARMv8.2-A | aarch64-linux | ✅ Created |
+| `torchaudio-python313-cuda12_8-sm120-armv8_2` | ARMv8.2-A | aarch64-linux | ✅ Created |
 | `torchaudio-python313-cuda12_8-sm120-armv9` | ARMv9-A | aarch64-linux | ✅ Created |
 
 **GPU Pattern (SM120):**
@@ -149,31 +149,31 @@ gpuArchNum = "12.0";
 gpuTargets = [ gpuArchNum ];
 ```
 
-### All Remaining Variants (48/60) ✅ COMPLETE
+### All Remaining Variants ✅ COMPLETE
 
-#### SM110 Variants (6/6) ✅ COMPLETE - Pattern Type A
+#### SM110 Variants (6/6) ✅ COMPLETE — `cuda-13_0` branch
 
 **GPU:** NVIDIA DRIVE Thor, Orin+ (Automotive)
 **Pattern:** sm_XXX format (`gpuArchSM = "sm_110"`)
 
-- `torchaudio-python313-cuda12_8-sm110-avx2` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm110-avx512` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm110-avx512bf16` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm110-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm110-armv8.2` (aarch64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm110-armv9` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-avx2` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-avx512` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-avx512bf16` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-avx512vnni` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-armv8_2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda13_0-sm110-armv9` (aarch64) - ✅ Created
 
-#### SM103 Variants (6/6) ✅ COMPLETE - Pattern Type A
+#### SM103 Variants (6/6) ✅ COMPLETE — `cuda-12_9` branch
 
 **GPU:** NVIDIA Blackwell B300 (Datacenter)
 **Pattern:** sm_XXX format (`gpuArchSM = "sm_103"`)
 
-- `torchaudio-python313-cuda12_8-sm103-avx2` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm103-avx512` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm103-avx512bf16` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm103-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm103-armv8.2` (aarch64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm103-armv9` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-avx2` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-avx512` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-avx512bf16` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-avx512vnni` (x86_64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-armv8_2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_9-sm103-armv9` (aarch64) - ✅ Created
 
 #### SM100 Variants (6/6) ✅ COMPLETE - Pattern Type A
 
@@ -184,7 +184,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cuda12_8-sm100-avx512` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm100-avx512bf16` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm100-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm100-armv8.2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_8-sm100-armv8_2` (aarch64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm100-armv9` (aarch64) - ✅ Created
 
 #### SM90 Variants (6/6) ✅ COMPLETE - Pattern Type A
@@ -196,7 +196,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cuda12_8-sm90-avx512` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm90-avx512bf16` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm90-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm90-armv8.2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_8-sm90-armv8_2` (aarch64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm90-armv9` (aarch64) - ✅ Created
 
 #### SM89 Variants (6/6) ✅ COMPLETE - Pattern Type A
@@ -208,7 +208,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cuda12_8-sm89-avx512` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm89-avx512bf16` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm89-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm89-armv8.2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_8-sm89-armv8_2` (aarch64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm89-armv9` (aarch64) - ✅ Created
 
 #### SM86 Variants (6/6) ✅ COMPLETE - Pattern Type B
@@ -220,7 +220,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cuda12_8-sm86-avx512` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm86-avx512bf16` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm86-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm86-armv8.2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_8-sm86-armv8_2` (aarch64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm86-armv9` (aarch64) - ✅ Created
 
 #### SM80 Variants (6/6) ✅ COMPLETE - Pattern Type A
@@ -232,7 +232,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cuda12_8-sm80-avx512` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm80-avx512bf16` (x86_64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm80-avx512vnni` (x86_64) - ✅ Created
-- `torchaudio-python313-cuda12_8-sm80-armv8.2` (aarch64) - ✅ Created
+- `torchaudio-python313-cuda12_8-sm80-armv8_2` (aarch64) - ✅ Created
 - `torchaudio-python313-cuda12_8-sm80-armv9` (aarch64) - ✅ Created
 
 #### CPU-only Variants (6/6) ✅ COMPLETE
@@ -241,7 +241,7 @@ gpuTargets = [ gpuArchNum ];
 - `torchaudio-python313-cpu-avx512` (x86_64 or both platforms) - ✅ Created
 - `torchaudio-python313-cpu-avx512bf16` (x86_64 or both platforms) - ✅ Created
 - `torchaudio-python313-cpu-avx512vnni` (x86_64 or both platforms) - ✅ Created
-- `torchaudio-python313-cpu-armv8.2` (aarch64 or both platforms) - ✅ Created
+- `torchaudio-python313-cpu-armv8_2` (aarch64 or both platforms) - ✅ Created
 - `torchaudio-python313-cpu-armv9` (aarch64 or both platforms) - ✅ Created
 
 ## GPU Architecture Patterns (CRITICAL!)
@@ -360,7 +360,7 @@ For each GPU architecture:
 
 2. **Use RECIPE_TEMPLATE.md** to generate 6 variants:
    - 4 x86-64 variants: avx2, avx512, avx512bf16, avx512vnni
-   - 2 ARM variants: armv8.2, armv9
+   - 2 ARM variants: armv8_2, armv9
 
 3. **Verify pattern matches PyTorch**
 
@@ -421,9 +421,7 @@ customPytorch = inputs.build-pytorch.packages.{system}.pytorch-python313-cuda12_
 - ✅ SM80: 6/6 variants created (100%)
 - ✅ CPU-only: 6/6 variants created (100%)
 
-**Total Progress: 60/60 (100% ✅ COMPLETE)**
-
-**All variants created!** 🎉
+**Total: 61 variants across 3 branches (43 on `main`, 12 on `cuda-13_0`, 6 on `cuda-12_9`)**
 
 **Pattern Reference:**
 - Pattern Type A (SM121, SM110, SM103, SM100, SM90, SM89, SM80): with gpuArchSM

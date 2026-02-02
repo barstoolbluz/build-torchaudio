@@ -8,8 +8,8 @@ This project provides architecture-specific TorchAudio builds that match the GPU
 
 ## Key Features
 
-- **GPU-Optimized**: Builds for NVIDIA architectures (SM80-SM121)
-- **CPU-Optimized**: AVX-512, AVX-512 BF16, AVX-512 VNNI, AVX2, ARMv8.2, ARMv9
+- **GPU-Optimized**: Builds for NVIDIA architectures (SM61-SM121)
+- **CPU-Optimized**: AVX-512, AVX-512 BF16, AVX-512 VNNI, AVX2, AVX, ARMv8.2, ARMv9
 - **Architecture-Specific**: Each build targets specific compute capabilities
 - **Reproducible**: Managed with Flox/Nix for consistent builds
 
@@ -49,16 +49,23 @@ To find compatible versions:
 
 ## Architecture Support
 
-### GPU Architectures (CUDA 12.8)
-- **SM121** (12.1) - DGX Spark (Specialized Datacenter)
+### GPU Architectures
+
+**On `main` branch (CUDA 12.8):**
 - **SM120** (12.0) - Blackwell (RTX 5090)
-- **SM110** (11.0) - NVIDIA DRIVE Thor, Orin+ (Automotive)
-- **SM103** (10.3) - Blackwell B300 (Datacenter)
 - **SM100** (10.0) - Blackwell B100/B200 (Datacenter)
 - **SM90** (9.0) - Hopper (H100, L40S)
 - **SM89** (8.9) - Ada Lovelace (RTX 4090, L40)
 - **SM86** (8.6) - Ampere (RTX 3090, A40, A5000)
 - **SM80** (8.0) - Ampere Datacenter (A100, A30)
+- **SM61** (6.1) - Pascal (GTX 1080, Tesla P40)
+
+**On `cuda-13_0` branch (CUDA 13.0):**
+- **SM121** (12.1) - DGX Spark (Specialized Datacenter)
+- **SM110** (11.0) - NVIDIA DRIVE Thor, Orin+ (Automotive)
+
+**On `cuda-12_9` branch (CUDA 12.9):**
+- **SM103** (10.3) - Blackwell B300 (Datacenter)
 
 ### CPU Instruction Sets
 - **AVX-512 BF16**: BF16 training on Intel Sapphire Rapids+
@@ -91,19 +98,24 @@ flox build torchaudio-python313-cuda12_8-sm120-avx512
 
 ## Current Status
 
-**✅ 60/60 variants implemented (100%) 🎉 COMPLETE**
+**✅ 43 variants on `main` (61 total across all branches)**
 
-### Implemented (60 variants)
-- ✅ **SM121 (DGX Spark)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM120 (RTX 5090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM110 (DRIVE Thor)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM103 (B300)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM100 (B100/B200)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM90 (H100)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM89 (RTX 4090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM86 (RTX 3090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM80 (A100)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **CPU-only**: All 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
+### On `main` (43 variants, CUDA 12.8)
+- ✅ **SM120 (RTX 5090)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM100 (B100/B200)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM90 (H100)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM89 (RTX 4090)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM86 (RTX 3090)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM80 (A100)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM61 (GTX 1080)**: 1 variant (avx)
+- ✅ **CPU-only**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+
+### On `cuda-13_0` (12 variants, CUDA 13.0)
+- ✅ **SM121 (DGX Spark)**: 6 variants
+- ✅ **SM110 (DRIVE Thor)**: 6 variants
+
+### On `cuda-12_9` (6 variants, CUDA 12.9)
+- ✅ **SM103 (B300)**: 6 variants
 - ✅ Flox environment initialized
 - ✅ Git repository initialized
 - ✅ Directory structure created
@@ -286,7 +298,7 @@ This project includes comprehensive documentation:
 
 - **[README.md](./README.md)** - This file (overview and reference)
 - **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide with examples
-- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix (60/60 variants - 100% complete)
+- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix (61 variants across all branches)
 - **[RECIPE_TEMPLATE.md](./RECIPE_TEMPLATE.md)** - Templates for creating new variants
 
 ## GPU Architecture Patterns (CRITICAL!)
@@ -332,7 +344,7 @@ This project is a companion to `build-pytorch` and follows the same:
 
 ## Next Steps
 
-1. ✅ **All variants created**: 60/60 variants complete (9 GPU architectures + CPU-only)
+1. ✅ **All variants created**: 61 variants across 3 branches (7 GPU architectures on main + 3 on feature branches + CPU-only)
 2. **PyTorch dependency**: Implement proper dependency on `build-pytorch` packages
 3. **Testing**: Add test scripts for verifying builds (TEST_GUIDE.md)
 4. **CI/CD**: Add automated builds for all variants

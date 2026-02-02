@@ -355,7 +355,7 @@ in
 
 ### GPU Architectures
 
-**Status:** All 60/60 variants created - 100% complete ✅
+**Status:** 61 variants across all branches (43 on `main`, 12 on `cuda-13_0`, 6 on `cuda-12_9`)
 
 | Variable | {GPU_ARCH} | {GPU_ARCH_UPPER} | {GPU_ARCH_DECIMAL} | {GPU_DESC} | Pattern | Status |
 |----------|------------|------------------|-------------------|------------|---------|--------|
@@ -409,14 +409,14 @@ in
 | Variable | {CPU_ISA} | {CPU_ISA_DESC} | {CPU_FLAGS} | {PLATFORM} |
 |----------|-----------|----------------|-------------|------------|
 | ARMv9 | `armv9` | `ARMv9-A with SVE2` | `"-march=armv9-a+sve2"` | `aarch64-linux` |
-| ARMv8.2 | `armv8.2` | `ARMv8.2-A with FP16 and dot product` | `"-march=armv8.2-a+fp16+dotprod"` | `aarch64-linux` |
+| ARMv8.2 | `armv8_2` | `ARMv8.2-A with FP16 and dot product` | `"-march=armv8.2-a+fp16+dotprod"` | `aarch64-linux` |
 
 **ARM CPU Hardware Details:**
 
 | {CPU_ISA} | {CPU_HARDWARE} |
 |-----------|----------------|
 | armv9 | AWS Graviton3+, NVIDIA Grace, ARM Neoverse V1+, latest server/mobile processors |
-| armv8.2 | AWS Graviton2, NVIDIA Tegra Xavier+, ARM Cortex-A76+ |
+| armv8_2 | AWS Graviton2, NVIDIA Tegra Xavier+, ARM Cortex-A76+ |
 
 ### Platform Combinations
 
@@ -591,7 +591,7 @@ To create a new variant:
 - ARM GPU builds should use `platforms = [ "aarch64-linux" ]`
 - x86-64 GPU builds should use `platforms = [ "x86_64-linux" ]`
 - CPU-only builds can use both platforms for maximum compatibility
-- **Current Status:** All variants created - 60/60 complete (100% ✅)
+- **Current Status:** 61 variants across all branches
 
 ---
 
