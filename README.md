@@ -91,19 +91,13 @@ flox build torchaudio-python313-cuda12_8-sm120-avx512
 
 ## Current Status
 
-**✅ 60/60 variants implemented (100%) 🎉 COMPLETE**
+**✅ 12 variants on this branch (CUDA 13.0)**
 
-### Implemented (60 variants)
-- ✅ **SM121 (DGX Spark)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM120 (RTX 5090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM110 (DRIVE Thor)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM103 (B300)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM100 (B100/B200)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM90 (H100)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM89 (RTX 4090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM86 (RTX 3090)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **SM80 (A100)**: All 6 CPU variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
-- ✅ **CPU-only**: All 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8.2, armv9)
+### On `cuda-13_0` (12 variants)
+- ✅ **SM121 (DGX Spark)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+- ✅ **SM110 (DRIVE Thor)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
+
+See `main` branch for SM80-SM120 (CUDA 12.8) and `cuda-12_9` for SM103 (CUDA 12.9).
 - ✅ Flox environment initialized
 - ✅ Git repository initialized
 - ✅ Directory structure created
@@ -286,7 +280,7 @@ This project includes comprehensive documentation:
 
 - **[README.md](./README.md)** - This file (overview and reference)
 - **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide with examples
-- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix (60/60 variants - 100% complete)
+- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix
 - **[RECIPE_TEMPLATE.md](./RECIPE_TEMPLATE.md)** - Templates for creating new variants
 
 ## GPU Architecture Patterns (CRITICAL!)
@@ -332,7 +326,7 @@ This project is a companion to `build-pytorch` and follows the same:
 
 ## Next Steps
 
-1. ✅ **All variants created**: 60/60 variants complete (9 GPU architectures + CPU-only)
+1. ✅ **Branch variants created**: 12 variants (SM121 + SM110, CUDA 13.0)
 2. **PyTorch dependency**: Implement proper dependency on `build-pytorch` packages
 3. **Testing**: Add test scripts for verifying builds (TEST_GUIDE.md)
 4. **CI/CD**: Add automated builds for all variants
