@@ -62,7 +62,7 @@ in
       echo "========================================="
       echo "GPU Target: SM110 (NVIDIA DRIVE Thor/Orin+)"
       echo "CPU Features: AVX2"
-      echo "CUDA: 12.8 (Compute Capability 11.0)"
+      echo "CUDA: 13.0 (Compute Capability 11.0)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
@@ -74,7 +74,7 @@ in
         Custom TorchAudio build with targeted optimizations:
         - GPU: NVIDIA DRIVE Thor/Orin+ (SM110) - Automotive/Edge AI
         - CPU: x86-64 with AVX2 instruction set (broad compatibility)
-        - CUDA: 12.8 with compute capability 11.0
+        - CUDA: 13.0 with compute capability 11.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 

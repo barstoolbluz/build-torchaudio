@@ -1,5 +1,5 @@
 # TorchAudio optimized for NVIDIA DGX Spark (SM121) + AVX-512 VNNI
-# Package name: torchaudio-python313-cuda12_8-sm121-avx512vnni
+# Package name: torchaudio-python313-cuda13_0-sm121-avx512vnni
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -52,7 +52,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm121-avx512vnni";
+    pname = "torchaudio-python313-cuda13_0-sm121-avx512vnni";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -68,7 +68,7 @@ in
       echo "========================================="
       echo "GPU Target: SM121 (DGX Spark - Specialized Datacenter)"
       echo "CPU Features: AVX-512 + VNNI"
-      echo "CUDA: 12.8 (Compute Capability 12.1)"
+      echo "CUDA: 13.0 (Compute Capability 12.1)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
@@ -80,7 +80,7 @@ in
         Custom TorchAudio build with targeted optimizations:
         - GPU: NVIDIA DGX Spark (SM121, Compute Capability 12.1)
         - CPU: x86-64 with AVX-512 + VNNI instruction set
-        - CUDA: 12.8
+        - CUDA: 13.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
@@ -90,7 +90,7 @@ in
         - Driver: NVIDIA 570+ required
 
         NOTE: This package depends on a matching PyTorch variant.
-        Ensure pytorch-python313-cuda12_8-sm121-avx512vnni is installed.
+        Ensure pytorch-python313-cuda13_0-sm121-avx512vnni is installed.
 
         Choose this if: You have DGX Spark with VNNI-capable CPUs and need
         INT8 inference acceleration. VNNI provides significant speedup for

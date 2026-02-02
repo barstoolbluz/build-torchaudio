@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA DGX Spark (SM121) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_8-sm121-armv8.2
+# TorchAudio optimized for NVIDIA DGX Spark (SM121) + AVX-512 BF16
+# Package name: torchaudio-python313-cuda13_0-sm121-avx512bf16
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -20,9 +20,14 @@ let
   gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
   gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
 
-  # CPU optimization: ARMv8.2 with FP16 and dot product support
+  # CPU optimization: AVX-512 with BF16 support
   cpuFlags = [
-    "-march=armv8.2-a+fp16+dotprod"  # ARMv8.2 with FP16 and dot product
+    "-mavx512f"    # AVX-512 Foundation
+    "-mavx512dq"   # Doubleword and Quadword instructions
+    "-mavx512vl"   # Vector Length extensions
+    "-mavx512bw"   # Byte and Word instructions
+    "-mavx512bf16" # BF16 (Brain Float16) instructions
+    "-mfma"        # Fused multiply-add
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
@@ -47,7 +52,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm121-armv8.2";
+    pname = "torchaudio-python313-cuda13_0-sm121-avx512bf16";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -62,35 +67,35 @@ in
       echo "TorchAudio Build Configuration"
       echo "========================================="
       echo "GPU Target: SM121 (DGX Spark - Specialized Datacenter)"
-      echo "CPU Features: ARMv8.2 + FP16 + Dot Product"
-      echo "CUDA: 12.8 (Compute Capability 12.1)"
+      echo "CPU Features: AVX-512 + BF16"
+      echo "CUDA: 13.0 (Compute Capability 12.1)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA DGX Spark (SM121) + ARMv8.2";
+      description = "TorchAudio for NVIDIA DGX Spark (SM121) + AVX-512 BF16";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
         - GPU: NVIDIA DGX Spark (SM121, Compute Capability 12.1)
-        - CPU: ARMv8.2 with FP16 and dot product extensions
-        - CUDA: 12.8
+        - CPU: x86-64 with AVX-512 + BF16 instruction set
+        - CUDA: 13.0
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
         Hardware requirements:
         - GPU: DGX Spark specialized datacenter GPUs
-        - CPU: AWS Graviton2, NVIDIA Tegra Xavier+
+        - CPU: Intel Sapphire Rapids+ (2023+), AMD Genoa+ (2022+)
         - Driver: NVIDIA 570+ required
 
         NOTE: This package depends on a matching PyTorch variant.
-        Ensure pytorch-python313-cuda12_8-sm121-armv8.2 is installed.
+        Ensure pytorch-python313-cuda13_0-sm121-avx512bf16 is installed.
 
-        Choose this if: You have DGX Spark in ARM-based datacenter with
-        Graviton2 or similar ARMv8.2 processors. For newer ARM CPUs,
-        consider the armv9 variant for better performance.
+        Choose this if: You have DGX Spark with latest datacenter CPUs and
+        need BF16 training acceleration. BF16 provides better numerical
+        stability than FP16 for training workloads.
       '';
-      platforms = [ "aarch64-linux" ];
+      platforms = [ "x86_64-linux" ];
     };
   })
