@@ -60,7 +60,7 @@ in
       echo "========================================="
       echo "GPU Target: SM103 (Blackwell B300 Datacenter)"
       echo "CPU Features: ARMv9 + SVE + SVE2"
-      echo "CUDA: 12.8 (Compute Capability 10.3)"
+      echo "CUDA: 12.9 (Compute Capability 10.3)"
       echo "CXXFLAGS: $CXXFLAGS"
       echo "Build parallelism: 32 cores max"
       echo "========================================="
@@ -72,7 +72,7 @@ in
         Custom TorchAudio build with targeted optimizations:
         - GPU: NVIDIA Blackwell B300 (SM103) - Datacenter
         - CPU: ARMv9 with Scalable Vector Extensions (SVE/SVE2)
-        - CUDA: 12.8 with compute capability 10.3
+        - CUDA: 12.9 with compute capability 10.3
         - Python: 3.13
         - PyTorch: Custom build with matching GPU/CPU configuration
 
