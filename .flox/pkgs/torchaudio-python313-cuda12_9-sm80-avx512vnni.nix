@@ -1,5 +1,5 @@
-# TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + ARMv8.2
-# Package name: torchaudio-python313-cuda12_9-sm103-armv8_2
+# TorchAudio optimized for NVIDIA Ampere A100/A30 (SM80) + AVX-512 VNNI
+# Package name: torchaudio-python313-cuda12_9-sm80-avx512vnni
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -18,12 +18,17 @@ let
   };
 
   # GPU target
-  gpuArchNum = "103";
-  gpuArchSM = "sm_103";
+  gpuArchNum = "80";
+  gpuArchSM = "sm_80";
 
   # CPU optimization
   cpuFlags = [
-    "-march=armv8.2-a+fp16+dotprod"
+    "-mavx512f"
+    "-mavx512dq"
+    "-mavx512vl"
+    "-mavx512bw"
+    "-mavx512vnni"
+    "-mfma"
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
@@ -46,7 +51,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_9-sm103-armv8_2";
+    pname = "torchaudio-python313-cuda12_9-sm80-avx512vnni";
 
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
@@ -60,7 +65,7 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: sm_103"
+      echo "GPU Target: sm_80"
       echo "CPU Features: Optimized"
       echo "CUDA: Enabled"
       echo "PyTorch: ${customPytorch.version}"
@@ -69,7 +74,7 @@ in
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio optimized for NVIDIA Blackwell B300 (SM103) + ARMv8.2";
+      description = "TorchAudio optimized for NVIDIA Ampere A100/A30 (SM80) + AVX-512 VNNI";
       platforms = oldAttrs.meta.platforms or [ "x86_64-linux" "aarch64-linux" ];
     };
   })
