@@ -17,9 +17,9 @@ let
     ];
   };
 
-  # GPU target
+  # GPU target: SM61 (Pascal consumer - GTX 1070, 1080, 1080 Ti)
   gpuArchNum = "61";
-  gpuArchSM = "6.1";
+  gpuArchSM = "6.1";  # Dot notation required for older archs in TORCH_CUDA_ARCH_LIST
 
   # CPU optimization
   cpuFlags = [
@@ -64,9 +64,9 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: 6.1"
-      echo "CPU Features: Optimized"
-      echo "CUDA: Enabled"
+      echo "GPU Target: ${gpuArchSM} (Pascal: GTX 1070, 1080, 1080 Ti)"
+      echo "CPU Features: AVX2 + FMA"
+      echo "CUDA: Enabled (cuDNN disabled — SM61 unsupported by cuDNN 9.11+)"
       echo "PyTorch: ${customPytorch.version}"
       echo "TorchAudio: ${oldAttrs.version}"
       echo "========================================="
@@ -74,6 +74,6 @@ in
 
     meta = oldAttrs.meta // {
       description = "TorchAudio optimized for NVIDIA Pascal GTX 10-series (SM61) + AVX2";
-      platforms = oldAttrs.meta.platforms or [ "x86_64-linux" "aarch64-linux" ];
+      platforms = [ "x86_64-linux" ];
     };
   })

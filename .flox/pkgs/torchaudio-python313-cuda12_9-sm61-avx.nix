@@ -1,4 +1,4 @@
-# TorchAudio optimized for NVIDIA Pascal GTX 10-series (SM61) + AVX
+# TorchAudio optimized for NVIDIA Pascal GTX 1070/1080 Ti (SM61) + AVX
 # Package name: torchaudio-python313-cuda12_9-sm61-avx
 
 { pkgs ? import <nixpkgs> {} }:
@@ -17,14 +17,17 @@ let
     ];
   };
 
-  # GPU target
+  # GPU target: SM61 (Pascal consumer - GTX 1070, 1080, 1080 Ti)
   gpuArchNum = "61";
-  gpuArchSM = "6.1";
+  gpuArchSM = "6.1";  # Dot notation required for older archs in TORCH_CUDA_ARCH_LIST
 
-  # CPU optimization
+  # CPU optimization: AVX only (Ivy Bridge lacks FMA3, BMI1, BMI2, AVX2)
   cpuFlags = [
     "-mavx"
-    "-mfma"
+    "-mno-fma"
+    "-mno-bmi"
+    "-mno-bmi2"
+    "-mno-avx2"
   ];
 
   # Custom PyTorch with matching GPU/CPU configuration
@@ -36,12 +39,35 @@ let
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
+    # Prevent ATen from compiling AVX2/AVX512 dispatch kernels.
+    # FindAVX.cmake probe-compiles with -mavx2 and succeeds (the compiler
+    # supports it), then Codegen.cmake force-compiles kernel TUs with -mavx2
+    # regardless of project CXXFLAGS.  Lying to cmake here restricts the
+    # dispatch codegen to AVX + baseline only.
+    cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
+      "-DCXX_AVX2_FOUND=FALSE"
+      "-DC_AVX2_FOUND=FALSE"
+      "-DCXX_AVX512_FOUND=FALSE"
+      "-DC_AVX512_FOUND=FALSE"
+      "-DCAFFE2_COMPILER_SUPPORTS_AVX512_EXTENSIONS=OFF"
+      # NNPACK requires AVX2+FMA3 — disable for AVX-only builds
+      "-DUSE_NNPACK=OFF"
+    ];
+
     preConfigure = (oldAttrs.preConfigure or "") + ''
       export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
       export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
       export MAX_JOBS=32
+
       # cuDNN 9.11+ dropped SM < 7.5 support — disable for SM61
       export USE_CUDNN=0
+      # FBGEMM hard-requires AVX2 with no fallback — disable entirely
+      export USE_FBGEMM=0
+      # oneDNN/MKLDNN compiles AVX2/AVX512 dispatch variants internally
+      export USE_MKLDNN=0
+      export USE_MKLDNN_CBLAS=0
+      # NNPACK requires AVX2+FMA3 — disable entirely for AVX-only builds
+      export USE_NNPACK=0
     '';
   });
 
@@ -63,16 +89,16 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: 6.1"
-      echo "CPU Features: Optimized"
-      echo "CUDA: Enabled"
+      echo "GPU Target: ${gpuArchSM} (Pascal: GTX 1070, 1080, 1080 Ti)"
+      echo "CPU Features: AVX (maximum compatibility)"
+      echo "CUDA: Enabled (cuDNN disabled — SM61 unsupported by cuDNN 9.11+)"
       echo "PyTorch: ${customPytorch.version}"
       echo "TorchAudio: ${oldAttrs.version}"
       echo "========================================="
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio optimized for NVIDIA Pascal GTX 10-series (SM61) + AVX";
-      platforms = oldAttrs.meta.platforms or [ "x86_64-linux" "aarch64-linux" ];
+      description = "TorchAudio for NVIDIA GTX 1070/1080 Ti (SM61, Pascal) with AVX";
+      platforms = [ "x86_64-linux" ];
     };
   })
