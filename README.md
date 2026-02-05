@@ -401,11 +401,26 @@ build-torchaudio/
 
 ### How It Works
 
-1. **Nixpkgs Pin**: Each variant pins nixpkgs to commit `6a030d5` for reproducible PyTorch 2.9.1 + CUDA 12.9.1
+1. **Nixpkgs Pin**: Each variant pins nixpkgs to commit `6a030d5` for reproducible PyTorch 2.9.1 + TorchAudio 2.9.1
 2. **Custom PyTorch**: Builds PyTorch with matching GPU/CPU configuration via `torch.override`
 3. **TorchAudio Override**: Builds TorchAudio with `torchaudio.override { torch = customPytorch; }`
 4. **Build Flags**: Sets `CXXFLAGS`/`CFLAGS` for CPU instruction sets, `gpuTargets` for GPU architecture
 5. **Dependencies**: Injects specific CUDA libraries or BLAS backends
+
+### Key Build Variables
+
+```bash
+# GPU Architecture (CUDA builds)
+export TORCH_CUDA_ARCH_LIST="sm_90"
+export CMAKE_CUDA_ARCHITECTURES="90"
+
+# CPU Optimizations
+export CXXFLAGS="$CXXFLAGS -mavx512f -mavx512dq -mfma"
+
+# BLAS Backend Selection
+export BLAS=OpenBLAS  # or MKL
+export USE_CUBLAS=1   # For GPU builds
+```
 
 ## Publishing to Flox Catalog
 
@@ -446,6 +461,97 @@ To add more variants:
 4. Commit: `git add .flox/pkgs/your-new-variant.nix && git commit`
 5. Build: `flox build your-new-variant`
 
+### Example: Adding SM89 (RTX 4090) with AVX-512
+
+```nix
+# .flox/pkgs/torchaudio-python313-cuda12_9-sm89-avx512.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  # Pin nixpkgs for reproducible PyTorch 2.9.1 + TorchAudio 2.9.1
+  nixpkgs_pinned = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/6a030d535719c5190187c4cec156f335e95e3211.tar.gz";
+  }) {
+    config = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
+    overlays = [
+      (final: prev: { cudaPackages = final.cudaPackages_12_9; })
+    ];
+  };
+
+  # GPU target: SM89 (Ada Lovelace - RTX 4090, L4, L40)
+  gpuArchNum = "89";
+  gpuArchSM = "sm_89";
+
+  # CPU optimization: AVX-512
+  cpuFlags = [
+    "-mavx512f"    # AVX-512 Foundation
+    "-mavx512dq"   # Doubleword and Quadword instructions
+    "-mavx512vl"   # Vector Length extensions
+    "-mavx512bw"   # Byte and Word instructions
+    "-mfma"        # Fused multiply-add
+  ];
+
+  # Custom PyTorch with matching GPU/CPU configuration
+  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
+    cudaSupport = true;
+    gpuTargets = [ gpuArchSM ];
+  }).overrideAttrs (oldAttrs: {
+    ninjaFlags = [ "-j32" ];
+    requiredSystemFeatures = [ "big-parallel" ];
+    preConfigure = (oldAttrs.preConfigure or "") + ''
+      export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+      export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
+      export MAX_JOBS=32
+    '';
+  });
+
+in
+  (nixpkgs_pinned.python3Packages.torchaudio.override {
+    torch = customPytorch;
+  }).overrideAttrs (oldAttrs: {
+    pname = "torchaudio-python313-cuda12_9-sm89-avx512";
+    ninjaFlags = [ "-j32" ];
+    requiredSystemFeatures = [ "big-parallel" ];
+
+    preConfigure = (oldAttrs.preConfigure or "") + ''
+      export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+      export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
+      export MAX_JOBS=32
+    '';
+
+    meta = oldAttrs.meta // {
+      description = "TorchAudio for NVIDIA RTX 4090 (SM89, Ada) + AVX-512";
+      longDescription = ''
+        Custom TorchAudio build with targeted optimizations:
+        - GPU: NVIDIA Ada Lovelace architecture (SM89) - RTX 4090, L4, L40
+        - CPU: x86-64 with AVX-512 instruction set
+        - CUDA: 12.9 with compute capability 8.9
+        - BLAS: cuBLAS for GPU operations
+        - Python: 3.13
+      '';
+      platforms = [ "x86_64-linux" ];
+    };
+  })
+```
+
+**Key points:**
+- Pin nixpkgs to get compatible PyTorch + TorchAudio versions
+- Build custom PyTorch first with `torch.override { cudaSupport = true; gpuTargets = [...] }`
+- Build TorchAudio with `torchaudio.override { torch = customPytorch; }`
+- CPU flags go in `preConfigure` via `CXXFLAGS`/`CFLAGS`
+- Use `requiredSystemFeatures = [ "big-parallel" ]` in both PyTorch and TorchAudio to prevent memory saturation
+
+## Python Version Support
+
+Current variants use Python 3.13. To add Python 3.12 or 3.11 variants:
+
+1. Change package name: `python312Packages.pytorch-sm90-avx512`
+2. Ensure file name matches: `python312Packages.pytorch-sm90-avx512.nix`
+3. The build will automatically use the correct Python version
+
 ## Troubleshooting
 
 ### Build fails with "CUDA not found"
@@ -457,6 +563,13 @@ Ensure you're building on a Linux system. GPU builds are Linux-only.
 Verify the SM architecture is supported by your CUDA version:
 - SM103 requires CUDA 12.9+ (this branch)
 - SM110/SM121 require CUDA 13.0+ (cuda-13_0 branch)
+
+### CPU build performance is poor
+
+Consider using Intel MKL instead of OpenBLAS:
+```nix
+blasBackend = mkl;  # Instead of openblas
+```
 
 ### TorchAudio version mismatch
 
