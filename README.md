@@ -1,347 +1,551 @@
-# TorchAudio Architecture-Specific Builds
+# TorchAudio Custom Build Environment
 
-Build custom TorchAudio variants optimized for specific GPU architectures and CPU instruction sets using Flox and Nix.
+> **You are on the `cuda-13_0` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (12 variants)
+
+This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
 ## Overview
 
-This project provides architecture-specific TorchAudio builds that match the GPU/CPU optimizations of corresponding PyTorch variants from `build-pytorch`. Each TorchAudio variant is compiled with targeted optimizations for specific hardware.
+Modern PyTorch/TorchAudio containers are often bloated with support for every possible GPU architecture and CPU configuration. This project creates **targeted builds** that are optimized for specific hardware, resulting in:
 
-## Key Features
+- **Matched optimizations** - Pairs with PyTorch GPU/CPU configurations from `build-pytorch`
+- **Smaller binaries** - Only include code for your target GPU architecture
+- **Better performance** - CPU code optimized for specific instruction sets (AVX2, AVX-512, ARMv8/9)
+- **Faster startup** - Less code to load means faster initialization
+- **Easier deployment** - Install only the variant you need
 
-- **GPU-Optimized**: Builds for NVIDIA architectures (SM80-SM121)
-- **CPU-Optimized**: AVX-512, AVX-512 BF16, AVX-512 VNNI, AVX2, ARMv8.2, ARMv9
-- **Architecture-Specific**: Each build targets specific compute capabilities
-- **Reproducible**: Managed with Flox/Nix for consistent builds
+## Multi-Branch Strategy
 
-## Version Compatibility Strategy
+This repository provides TorchAudio builds across multiple branches, each targeting a specific TorchAudio + PyTorch + CUDA combination:
 
-For building older or specific versions of TorchAudio that require compatible PyTorch versions:
+| Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
+|--------|------------|---------|------|----------|---------------|
+| `main` | 2.8.0 | 2.8.0 | 12.8 | 44 | Stable baseline |
+| `cuda-12_9` | 2.9.1 | 2.9.1 | 12.9.1 | 50 | Full coverage + SM103 (B300) |
+| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **12** | **This branch** — SM110 (DRIVE Thor), SM121 (DGX Spark) |
 
-### Nixpkgs Pinning Approach
-When the default nixpkgs has incompatible versions (e.g., PyTorch 2.8.0 with TorchAudio 2.9.1), we pin nixpkgs to a specific commit that contains compatible versions:
+Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
-```nix
-let
-  # Pin nixpkgs to specific commit with compatible versions
-  nixpkgs_pinned = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/COMMIT_HASH.tar.gz";
-  }) {
-    config = {
-      allowUnfree = true;  # Required for CUDA packages
-      cudaSupport = true;
-    };
-  };
-in
-  # Use nixpkgs_pinned.python3Packages instead of pkgs.python3Packages
+## Version Matrix
+
+| Branch | TorchAudio | PyTorch | CUDA | cuDNN | Python | Min Driver | Nixpkgs Pin |
+|--------|------------|---------|------|-------|--------|------------|-------------|
+| `main` | 2.8.0 | 2.8.0 | 12.8 | 9.x | 3.13 | 550+ | [`fe5e41d`](https://github.com/NixOS/nixpkgs/tree/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3) |
+| `cuda-12_9` | 2.9.1 | 2.9.1 | 12.9.1 | 9.13.0 | 3.13 | 550+ | [`6a030d5`](https://github.com/NixOS/nixpkgs/tree/6a030d535719c5190187c4cec156f335e95e3211) |
+| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **TBD** | **3.13** | **570+** | **TBD** |
+
+## Build Matrix (this branch: cuda-13_0)
+
+**This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — specialized for SM110 (DRIVE Thor) and SM121 (DGX Spark) which require CUDA 13.0+.
+
+### Variant Matrix (this branch)
+
+This branch contains specialized variants for SM110 (DRIVE Thor) and SM121 (DGX Spark) which require CUDA 13.0+:
+
+| GPU Architecture | CPU ISA | Package Name | Primary Use Case |
+|-----------------|---------|--------------|------------------|
+| **SM110 (DRIVE Thor)** | AVX2 | `torchaudio-python313-cuda13_0-sm110-avx2` | DRIVE Thor + broad CPU compatibility |
+| | AVX-512 | `torchaudio-python313-cuda13_0-sm110-avx512` | DRIVE Thor + general workloads |
+| | AVX-512 BF16 | `torchaudio-python313-cuda13_0-sm110-avx512bf16` | DRIVE Thor + BF16 training |
+| | AVX-512 VNNI | `torchaudio-python313-cuda13_0-sm110-avx512vnni` | DRIVE Thor + INT8 inference |
+| | ARMv8.2 | `torchaudio-python313-cuda13_0-sm110-armv8_2` | DRIVE Thor + ARM Graviton2 |
+| | ARMv9 | `torchaudio-python313-cuda13_0-sm110-armv9` | DRIVE Thor + ARM Grace |
+| **SM121 (DGX Spark)** | AVX2 | `torchaudio-python313-cuda13_0-sm121-avx2` | DGX Spark + broad CPU compatibility |
+| | AVX-512 | `torchaudio-python313-cuda13_0-sm121-avx512` | DGX Spark + general workloads |
+| | AVX-512 BF16 | `torchaudio-python313-cuda13_0-sm121-avx512bf16` | DGX Spark + BF16 training |
+| | AVX-512 VNNI | `torchaudio-python313-cuda13_0-sm121-avx512vnni` | DGX Spark + INT8 inference |
+| | ARMv8.2 | `torchaudio-python313-cuda13_0-sm121-armv8_2` | DGX Spark + ARM Graviton2 |
+| | ARMv9 | `torchaudio-python313-cuda13_0-sm121-armv9` | DGX Spark + ARM Grace |
+
+For other GPU architectures (SM61–SM120, CPU-only), see the `main` or `cuda-12_9` branches.
+
+### Variants on Other Branches
+
+Different TorchAudio + PyTorch + CUDA combinations live on dedicated branches:
+
+| Branch | TorchAudio | PyTorch | CUDA | Architectures | Variants |
+|--------|------------|---------|------|---------------|----------|
+| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 44 (stable baseline) |
+| `cuda-12_9` | 2.9.1 | **2.9.1** | **12.9.1** | SM61–SM120 + SM103 (B300) | **50** (recommended) |
+
+```bash
+# TorchAudio 2.9.1 + PyTorch 2.9.1 + CUDA 12.9.1 (recommended for most use cases)
+git checkout cuda-12_9 && flox build torchaudio-python313-cuda12_9-sm90-avx512
+
+# TorchAudio 2.8.0 + PyTorch 2.8.0 + CUDA 12.8 (stable baseline)
+git checkout main && flox build torchaudio-python313-cuda12_8-sm90-avx512
 ```
 
-**Current pinning**: Commit `fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3` provides:
-- PyTorch 2.8.0
-- TorchAudio 2.8.0
-- TorchVision 0.23.0
+### GPU Architecture Reference
 
-To find compatible versions:
-1. Search nixpkgs history for commits containing all packages at desired versions
-2. Update all nix expressions to use the pinned nixpkgs
-3. Test builds to verify compatibility
+**SM121 (DGX Spark) - Compute Capability 12.1** *(this branch)*
+- Specialized Datacenter: DGX Spark
+- Driver: NVIDIA 570+
+- CUDA: Requires 12.9+ (nvcc 12.8 does not recognize sm_121)
 
-**Note**: The package name changed from `python3Packages.pytorch` to `python3Packages.torch` in newer nixpkgs versions.
+**SM120 (Blackwell) - Compute Capability 12.0**
+- Consumer: RTX 5090
+- Driver: NVIDIA 570+
+- Note: Requires PyTorch 2.7+ or nightly builds
 
-## Architecture Support
+**SM110 (Blackwell Thor/NVIDIA DRIVE) - Compute Capability 11.0** *(this branch)*
+- Automotive/Edge: NVIDIA DRIVE platforms (Thor, Orin+)
+- Driver: NVIDIA 550+
+- CUDA: Requires 13.0+ (nvcc 12.8 does not recognize sm_110)
 
-### GPU Architectures (CUDA 12.8)
-- **SM121** (12.1) - DGX Spark (Specialized Datacenter)
-- **SM120** (12.0) - Blackwell (RTX 5090)
-- **SM110** (11.0) - NVIDIA DRIVE Thor, Orin+ (Automotive)
-- **SM103** (10.3) - Blackwell B300 (Datacenter)
-- **SM100** (10.0) - Blackwell B100/B200 (Datacenter)
-- **SM90** (9.0) - Hopper (H100, L40S)
-- **SM89** (8.9) - Ada Lovelace (RTX 4090, L40)
-- **SM86** (8.6) - Ampere (RTX 3090, A40, A5000)
-- **SM80** (8.0) - Ampere Datacenter (A100, A30)
+**SM103 (Blackwell B300 Datacenter) - Compute Capability 10.3** *(cuda-12_9 branch)*
+- Datacenter: B300
+- Driver: NVIDIA 550+
+- CUDA: Requires 12.9+ (nvcc 12.8 does not recognize sm_103)
 
-### CPU Instruction Sets
-- **AVX-512 BF16**: BF16 training on Intel Sapphire Rapids+
-- **AVX-512 VNNI**: INT8 inference on Intel Cascade Lake+
-- **AVX-512**: Intel Skylake-X+, AMD Zen 4+
-- **AVX2**: Broad x86-64 compatibility
-- **ARMv9**: AWS Graviton3+, Grace Hopper
-- **ARMv8.2**: AWS Graviton2, NVIDIA Tegra
+**SM100 (Blackwell Datacenter) - Compute Capability 10.0**
+- Datacenter: B100, B200
+- Driver: NVIDIA 550+
+- Features: FP4 GEMV kernels, blockscaled datatypes, mixed input GEMM
+
+**SM90 (Hopper) - Compute Capability 9.0**
+- Datacenter: H100, H200, L40S
+- Driver: NVIDIA 525+
+- Features: Native FP8, Transformer Engine
+
+**SM89 (Ada Lovelace) - Compute Capability 8.9**
+- Consumer: RTX 4090, RTX 4080, RTX 4070 Ti, RTX 4070, RTX 4060 Ti
+- Datacenter: L4, L40
+- Driver: NVIDIA 520+
+- Features: RT cores (3rd gen), Tensor cores (4th gen), DLSS 3
+
+**SM86 (Ampere) - Compute Capability 8.6**
+- Consumer: RTX 3090, RTX 3090 Ti, RTX 3080 Ti
+- Datacenter: A5000, A40
+- Driver: NVIDIA 470+
+- Features: RT cores, Tensor cores (2nd gen)
+
+**SM80 (Ampere Datacenter) - Compute Capability 8.0**
+- Datacenter: A100 (40GB/80GB), A30
+- Driver: NVIDIA 450+
+- Features: Multi-Instance GPU (MIG), Tensor cores (3rd gen), FP64 Tensor cores
+
+**SM61 (Pascal) - Compute Capability 6.1**
+- Consumer: GTX 1070, GTX 1080, GTX 1080 Ti
+- Driver: NVIDIA 390+
+- Note: cuDNN 9.11+ dropped SM < 7.5 support. FBGEMM, MKLDNN, NNPACK disabled (require AVX2+) for AVX variant. AVX2 variant disables cuDNN only.
+
+**Other Supported Architectures** (no variants yet, add as needed):
+- SM75 (Turing): T4, RTX 2080 Ti, Quadro RTX 8000
+
+### CPU Variant Guide
+
+Choose the right CPU variant based on your hardware and workload:
+
+**AVX2 (Broad Compatibility)**
+- Hardware: Intel Haswell+ (2013+), AMD Zen 1+ (2017+)
+- Use for: Maximum compatibility, development, general workloads
+- Choose when: Uncertain about CPU features or need portability
+
+**AVX-512 (General Performance)**
+- Hardware: Intel Skylake-X+ (2017+), AMD Zen 4+ (2022+)
+- Use for: General FP32 training and inference on modern CPUs
+- Choose when: You have AVX-512 CPU and need general-purpose performance
+- NOT for: Specialized BF16 training or INT8 inference (see below)
+
+**AVX-512 BF16 (Mixed-Precision Training)**
+- Hardware: Intel Cooper Lake+ (2020+), AMD Zen 4+ (2022+)
+- Use for: BF16 (Brain Float 16) mixed-precision training only
+- Choose when: Training with BF16 on CPU (rare - usually done on GPU)
+- NOT for: INT8 inference or general FP32 workloads
+- Detection: `lscpu | grep bf16` or `/proc/cpuinfo` shows `avx512_bf16`
+
+**AVX-512 VNNI (INT8 Inference)**
+- Hardware: Intel Skylake-SP+ (2017+), AMD Zen 4+ (2022+)
+- Use for: Quantized INT8 model inference acceleration
+- Choose when: Running INT8 quantized models for fast inference
+- NOT for: Training or general FP32 workloads
+- Detection: `lscpu | grep vnni` or `/proc/cpuinfo` shows `avx512_vnni`
+
+**ARMv8.2 (ARM Servers - Older)**
+- Hardware: ARM Neoverse N1, Cortex-A75+, AWS Graviton2
+- Use for: ARM servers without SVE2 support
+- Choose when: You have Graviton2 or older ARM server hardware
+
+**ARMv9 (ARM Servers - Modern)**
+- Hardware: NVIDIA Grace, ARM Neoverse V1/V2, Cortex-X2+, AWS Graviton3+
+- Use for: Modern ARM servers with SVE2 (Scalable Vector Extensions)
+- Choose when: You have Grace, Graviton3+, or other modern ARM processors
+- Detection: `lscpu | grep sve` or `/proc/cpuinfo` shows `sve` and `sve2`
+
+## Variant Selection Guide
+
+### Quick Decision Tree
+
+**1. Do you have an NVIDIA GPU?**
+- NO → Use CPU-only variant (choose CPU ISA below)
+- YES → Continue to step 2
+
+**2. Which GPU do you have?**
+```bash
+# Check GPU model
+nvidia-smi --query-gpu=name --format=csv,noheader
+
+# Check compute capability
+nvidia-smi --query-gpu=compute_cap --format=csv,noheader
+```
+
+| Your GPU | Compute Cap | Use Architecture |
+|----------|-------------|------------------|
+| DGX Spark | 12.1 | **SM121** |
+| RTX 5090 | 12.0 | **SM120** |
+| NVIDIA DRIVE Thor, Orin+ | 11.0 | **SM110** |
+| B300 | 10.3 | **SM103** |
+| B100, B200 | 10.0 | **SM100** |
+| H100, H200, L40S | 9.0 | **SM90** |
+| RTX 4090, RTX 4080, RTX 4070 series, L4, L40 | 8.9 | **SM89** |
+| RTX 3090, RTX 3090 Ti, RTX 3080 Ti, A5000, A40 | 8.6 | **SM86** |
+| A100, A30 | 8.0 | **SM80** |
+| GTX 1070, 1080, 1080 Ti | 6.1 | **SM61** |
+
+**3. Which CPU ISA should you use?**
+```bash
+# Check CPU features
+lscpu | grep -E 'avx|sve'
+# or
+grep -E 'avx|sve' /proc/cpuinfo
+```
+
+| If you see... | Platform | Workload Type | Choose |
+|--------------|----------|---------------|--------|
+| `avx512_bf16` | x86-64 | BF16 training on CPU | `avx512bf16` |
+| `avx512_vnni` | x86-64 | INT8 inference | `avx512vnni` |
+| `avx512f` | x86-64 | General workloads | `avx512` |
+| `avx2` (no avx512) | x86-64 | General workloads | `avx2` |
+| `sve` and `sve2` | ARM | Modern ARM (Grace, Graviton3+) | `armv9` |
+| Neither | ARM | Older ARM (Graviton2) | `armv8_2` |
+
+**Default Recommendations:**
+- **Development/Testing**: `cpu-avx2` (fastest build, broad compatibility)
+- **RTX 3090 Workstation (Intel i9/Xeon)**: `sm86-avx512`
+- **H100 Datacenter (x86-64)**: `sm90-avx512`
+- **RTX 5090 Gaming PC**: `sm120-avx512` or `sm120-avx2`
+- **AWS with H100 + Graviton3**: `sm90-armv9`
+- **Inference Server (INT8 models)**: `sm86-avx512vnni` (or sm90/sm120)
+
+### Example Use Cases
+
+**Scenario 1: RTX 3090 + Intel i9-12900K**
+```bash
+# Check CPU
+lscpu | grep avx512f  # ✓ Found AVX-512
+
+# Build variant
+flox build torchaudio-python313-cuda12_8-sm86-avx512
+```
+
+**Scenario 2: H100 Datacenter + AMD EPYC Zen 4**
+```bash
+# Check CPU
+lscpu | grep avx512_vnni  # ✓ Found for INT8 inference
+
+# For training
+flox build torchaudio-python313-cuda12_8-sm90-avx512
+
+# For INT8 inference
+flox build torchaudio-python313-cuda12_8-sm90-avx512vnni
+```
+
+**Scenario 3: Development Laptop (no GPU)**
+```bash
+# Maximum compatibility
+flox build torchaudio-python313-cpu-avx2
+```
+
+**Scenario 4: AWS Graviton3 + H100**
+```bash
+# Check ARM features
+lscpu | grep sve2  # ✓ Found (Graviton3 has SVE2)
+
+# Build variant
+flox build torchaudio-python313-cuda12_8-sm90-armv9
+```
 
 ## Quick Start
 
-### Prerequisites
-
-1. **Matching PyTorch variant** from `build-pytorch`
-2. **Flox** package manager
-3. **NVIDIA GPU** (for CUDA builds) with appropriate drivers
-
-### Building a Variant
-
 ```bash
-# Navigate to build-torchaudio directory
-cd build-torchaudio
-
-# Activate flox environment
+# Enter the build environment
 flox activate
 
 # Build a specific variant
-flox build torchaudio-python313-cuda12_8-sm120-avx512
-```
+flox build torchaudio-python313-cuda13_0-sm121-avx512
 
-## Current Status
+# The result will be in ./result-torchaudio-python313-cuda13_0-sm121-avx512/
+ls -lh result-torchaudio-python313-cuda13_0-sm121-avx512/
 
-**✅ 12 variants on this branch (CUDA 13.0)**
-
-### On `cuda-13_0` (12 variants)
-- ✅ **SM121 (DGX Spark)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
-- ✅ **SM110 (DRIVE Thor)**: 6 variants (avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
-
-See `main` branch for SM80-SM120 (CUDA 12.8) and `cuda-12_9` for SM103 (CUDA 12.9).
-- ✅ Flox environment initialized
-- ✅ Git repository initialized
-- ✅ Directory structure created
-- ✅ RECIPE_TEMPLATE.md created
-- ✅ BUILD_MATRIX.md created
-- ✅ QUICKSTART.md created
-- ✅ Memory saturation prevention implemented (requiredSystemFeatures)
-
-### TODO (Enhancements)
-- ⏳ Add test scripts
-- ⏳ Configure proper PyTorch dependency resolution
-
-## Package Naming Convention
-
-```
-torchaudio-python{VERSION}-cuda{CUDA_VERSION}-{GPU_ARCH}-{CPU_ISA}
-```
-
-Examples:
-- `torchaudio-python313-cuda12_8-sm120-avx512` - RTX 5090 + AVX-512
-- `torchaudio-python313-cuda12_8-sm90-avx512bf16` - H100 + AVX-512 BF16
-- `torchaudio-python313-cuda12_8-sm86-avx2` - RTX 3090 + AVX2
-
-## Dependencies
-
-### PyTorch Integration
-
-TorchAudio variants **must** be built against matching PyTorch variants:
-
-```
-torchaudio-python313-cuda12_8-sm120-avx512
-  ↓ depends on
-pytorch-python313-cuda12_8-sm120-avx512
-```
-
-**Important**: GPU architecture and CPU ISA must match between PyTorch and TorchAudio.
-
-### Current Limitation
-
-The sample .nix files currently reference nixpkgs' base `python3Packages.pytorch`. For production use, these should reference the actual PyTorch variants from `build-pytorch`.
-
-**TODO**: Implement proper cross-project dependency resolution (options):
-1. Reference `build-pytorch` packages via Flox
-2. Use Nix overlays
-3. Publish PyTorch to FloxHub and reference from there
-
-## Directory Structure
-
-```
-build-torchaudio/
-├── .flox/
-│   ├── env/              # Flox environment configuration
-│   ├── pkgs/             # Nix package definitions (.nix files)
-│   └── ...
-├── .git/                 # Git repository
-├── README.md             # This file
-└── (TODO: additional docs and scripts)
-```
-
-## Building Process
-
-### Build Flow
-
-1. TorchAudio .nix file specifies GPU/CPU configuration
-2. Dependencies include matching PyTorch variant
-3. Nix builds TorchAudio with:
-   - GPU architecture targeting (inherited from PyTorch)
-   - CPU optimization flags (CXXFLAGS/CFLAGS)
-   - CUDA 12.8 support (via cudaPackages)
-
-### Sample Build Command
-
-```bash
-# Build single variant
-flox build torchaudio-python313-cuda12_8-sm120-avx512
-
-# View build outputs
-ls -l result*
+# Test the build
+./result-torchaudio-python313-cuda13_0-sm121-avx512/bin/python -c "
+import torch, torchaudio
+print(f'PyTorch: {torch.__version__}')
+print(f'TorchAudio: {torchaudio.__version__}')
+print(f'CUDA available: {torch.cuda.is_available()}')
+"
 ```
 
 ## Build Configuration Details
 
+### GPU Builds
+
+GPU-optimized builds use:
+- **CUDA Toolkit** from nixpkgs (via Flox catalog)
+- **cuBLAS** for GPU linear algebra operations
+- **cuDNN** for deep learning primitives
+- **Targeted compilation** via `TORCH_CUDA_ARCH_LIST`
+
+Each GPU variant only compiles kernels for its specific SM architecture, reducing binary size by 50-70% compared to universal builds.
+
+### CPU Builds
+
+CPU-only builds use:
+- **OpenBLAS** for linear algebra (open-source alternative to MKL)
+- **oneDNN** (MKLDNN) for optimized deep learning operations
+- **Compiler flags** for specific instruction sets
+
 ### TorchAudio Build Pattern
 
-TorchAudio variants use a custom build pattern similar to TorchVision:
+TorchAudio variants build a custom PyTorch first, then build TorchAudio against it:
 
 ```nix
 # Create custom PyTorch with matching configuration
-customPytorch = (python3Packages.pytorch.override {
+customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
   cudaSupport = true;
-  gpuTargets = [ gpuArchNum ];  # or gpuArchSM for SM121
+  gpuTargets = [ gpuArchSM ];
 }).overrideAttrs (oldAttrs: {
   ninjaFlags = [ "-j32" ];
   requiredSystemFeatures = [ "big-parallel" ];
-
   preConfigure = (oldAttrs.preConfigure or "") + ''
-    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+    export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+    export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
     export MAX_JOBS=32
   '';
 });
 
 # Build TorchAudio with custom PyTorch
-(python3Packages.torchaudio.override {
+(nixpkgs_pinned.python3Packages.torchaudio.override {
   torch = customPytorch;
 }).overrideAttrs (oldAttrs: {
-  pname = "torchaudio-python313-cuda12_8-sm120-avx512";
-  ninjaFlags = [ "-j32" ];
-  requiredSystemFeatures = [ "big-parallel" ];
-
-  preConfigure = (oldAttrs.preConfigure or "") + ''
-    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
-    export MAX_JOBS=32
-  '';
+  pname = "torchaudio-python313-cuda13_0-sm121-avx512";
+  ...
 })
 ```
 
-### Memory Saturation Prevention (CRITICAL!)
+### BLAS Library Strategy
 
-**Problem:** TorchAudio builds trigger multiple concurrent derivations (PyTorch + TorchAudio + dependencies), each spawning unlimited CUDA compiler processes (`nvcc`, `cicc`, `ptxas`). On systems with `max-jobs = auto` and `cores = 0` (like Flox), this can saturate memory and spawn 95+ concurrent processes.
+| Build Type | BLAS Backend | Notes |
+|------------|--------------|-------|
+| GPU (CUDA) | cuBLAS | NVIDIA's optimized GPU library |
+| CPU (x86-64) | OpenBLAS | Open-source, good performance |
+| CPU (alternative) | Intel MKL | Proprietary, slightly faster, available in Flox catalog as `mkl` |
 
-**Solution:** Use `requiredSystemFeatures = [ "big-parallel" ];` in **BOTH** the customPytorch and torchaudio sections:
+## Architecture
+
+```
+build-torchaudio/
+├── .flox/
+│   ├── env/
+│   │   └── manifest.toml          # Build environment definition
+│   └── pkgs/                      # Nix expression builds (12 variants on this branch)
+│       ├── torchaudio-python313-cuda13_0-sm110-*.nix   # 6 SM110 variants (DRIVE Thor)
+│       └── torchaudio-python313-cuda13_0-sm121-*.nix   # 6 SM121 variants (DGX Spark)
+└── README.md
+```
+
+### How It Works
+
+1. **Nixpkgs Pin**: Each variant pins nixpkgs to a commit with CUDA 13.0 support (required for SM110/SM121)
+2. **Custom PyTorch**: Builds PyTorch with matching GPU/CPU configuration via `torch.override`
+3. **TorchAudio Override**: Builds TorchAudio with `torchaudio.override { torch = customPytorch; }`
+4. **Build Flags**: Sets `CXXFLAGS`/`CFLAGS` for CPU instruction sets, `gpuTargets` for GPU architecture
+5. **Dependencies**: Injects specific CUDA libraries or BLAS backends
+
+### Key Build Variables
+
+```bash
+# GPU Architecture (CUDA builds)
+export TORCH_CUDA_ARCH_LIST="sm_90"
+export CMAKE_CUDA_ARCHITECTURES="90"
+
+# CPU Optimizations
+export CXXFLAGS="$CXXFLAGS -mavx512f -mavx512dq -mfma"
+
+# BLAS Backend Selection
+export BLAS=OpenBLAS  # or MKL
+export USE_CUBLAS=1   # For GPU builds
+```
+
+## Publishing to Flox Catalog
+
+Once builds are validated, publish them for team use:
+
+```bash
+# Ensure git remote is configured
+git remote add origin <your-repo-url>
+git push origin master
+
+# Publish to your Flox organization
+flox publish -o <your-org> torchaudio-python313-cuda13_0-sm121-avx512
+flox publish -o <your-org> torchaudio-python313-cuda13_0-sm110-armv9
+
+# Users install with:
+flox install <your-org>/torchaudio-python313-cuda13_0-sm121-avx512
+```
+
+## Build Times & Requirements
+
+⚠️ **Warning**: Building TorchAudio from source also builds PyTorch as a dependency:
+
+- **Time**: 1-3 hours per variant (PyTorch dominates build time)
+- **Disk**: ~20GB per build (source + build artifacts)
+- **Memory**: 8GB+ RAM recommended
+- **CPU**: Multi-core system strongly recommended
+
+**Recommendation**: Build on CI/CD runners and publish to your Flox catalog. Users then install pre-built packages instantly.
+
+## Extending the Matrix
+
+To add more variants:
+
+1. Copy an existing `.nix` file from `.flox/pkgs/`
+2. Modify the `gpuArchNum`, `gpuArchSM` (for GPU builds), and `cpuFlags` variables
+3. Update the `pname` and descriptions
+4. Commit: `git add .flox/pkgs/your-new-variant.nix && git commit`
+5. Build: `flox build your-new-variant`
+
+### Example: Adding SM121 (DGX Spark) with AVX-512
 
 ```nix
-customPytorch = (python3Packages.pytorch.override {
-  cudaSupport = true;
-  gpuTargets = [ gpuArchNum ];
-}).overrideAttrs (oldAttrs: {
-  ninjaFlags = [ "-j32" ];
-  requiredSystemFeatures = [ "big-parallel" ];  # ← CRITICAL!
+# .flox/pkgs/torchaudio-python313-cuda13_0-sm121-avx512.nix
+{ pkgs ? import <nixpkgs> {} }:
 
-  preConfigure = (oldAttrs.preConfigure or "") + ''
-    export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-    export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
-    export MAX_JOBS=32
-  '';
-});
+let
+  # Pin nixpkgs for CUDA 13.0 support (required for SM121)
+  nixpkgs_pinned = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/TBD.tar.gz";
+  }) {
+    config = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
+  };
 
-in
-  (python3Packages.torchaudio.override {
-    torch = customPytorch;
+  # GPU target: SM121 (DGX Spark)
+  gpuArchNum = "121";
+  gpuArchSM = "sm_121";
+
+  # CPU optimization: AVX-512
+  cpuFlags = [
+    "-mavx512f"    # AVX-512 Foundation
+    "-mavx512dq"   # Doubleword and Quadword instructions
+    "-mavx512vl"   # Vector Length extensions
+    "-mavx512bw"   # Byte and Word instructions
+    "-mfma"        # Fused multiply-add
+  ];
+
+  # Custom PyTorch with matching GPU/CPU configuration
+  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
+    cudaSupport = true;
+    gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda12_8-sm120-avx512";
     ninjaFlags = [ "-j32" ];
-    requiredSystemFeatures = [ "big-parallel" ];  # ← CRITICAL!
-
+    requiredSystemFeatures = [ "big-parallel" ];
     preConfigure = (oldAttrs.preConfigure or "") + ''
-      export CXXFLAGS="$CXXFLAGS ${lib.concatStringsSep " " cpuFlags}"
-      export CFLAGS="$CFLAGS ${lib.concatStringsSep " " cpuFlags}"
+      export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+      export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
       export MAX_JOBS=32
     '';
+  });
+
+in
+  (nixpkgs_pinned.python3Packages.torchaudio.override {
+    torch = customPytorch;
+  }).overrideAttrs (oldAttrs: {
+    pname = "torchaudio-python313-cuda13_0-sm121-avx512";
+    ninjaFlags = [ "-j32" ];
+    requiredSystemFeatures = [ "big-parallel" ];
+
+    preConfigure = (oldAttrs.preConfigure or "") + ''
+      export CXXFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CXXFLAGS"
+      export CFLAGS="${nixpkgs_pinned.lib.concatStringsSep " " cpuFlags} $CFLAGS"
+      export MAX_JOBS=32
+    '';
+
+    meta = oldAttrs.meta // {
+      description = "TorchAudio for NVIDIA DGX Spark (SM121) + AVX-512";
+      longDescription = ''
+        Custom TorchAudio build with targeted optimizations:
+        - GPU: NVIDIA DGX Spark architecture (SM121)
+        - CPU: x86-64 with AVX-512 instruction set
+        - CUDA: 13.0 with compute capability 12.1
+        - BLAS: cuBLAS for GPU operations
+        - Python: 3.13
+      '';
+      platforms = [ "x86_64-linux" ];
+    };
   })
 ```
 
-**Why this works:**
-- `requiredSystemFeatures = [ "big-parallel" ]` tells Nix daemon to serialize resource-heavy builds
-- Prevents concurrent builds of PyTorch + TorchAudio + dependencies
-- Controls CUDA compiler parallelism at the Nix orchestration level
-- `ninjaFlags = [ "-j32" ]` limits ninja build parallelism to 32 cores
-- `MAX_JOBS=32` controls Python setuptools parallelism
+**Key points:**
+- Pin nixpkgs to get CUDA 13.0 support (required for SM110/SM121)
+- Build custom PyTorch first with `torch.override { cudaSupport = true; gpuTargets = [...] }`
+- Build TorchAudio with `torchaudio.override { torch = customPytorch; }`
+- CPU flags go in `preConfigure` via `CXXFLAGS`/`CFLAGS`
+- Use `requiredSystemFeatures = [ "big-parallel" ]` in both PyTorch and TorchAudio to prevent memory saturation
 
-**What doesn't work:**
-- Environment variables like `NIX_BUILD_CORES` or `CMAKE_BUILD_PARALLEL_LEVEL` are ineffective
-- CUDA compiler tools spawn their own processes outside ninja's control
-- Only Nix-level serialization with `requiredSystemFeatures` prevents concurrent derivation builds
+## Python Version Support
 
-**All TorchAudio variants in this repository include this fix.** If creating new variants, see RECIPE_TEMPLATE.md for the correct pattern.
+Current variants use Python 3.13. To add Python 3.12 or 3.11 variants:
 
-## Version Information
+1. Change package name: `python312Packages.pytorch-sm90-avx512`
+2. Ensure file name matches: `python312Packages.pytorch-sm90-avx512.nix`
+3. The build will automatically use the correct Python version
 
-- **TorchAudio**: Latest from nixpkgs (tracks PyTorch version)
-- **Python**: 3.13
-- **CUDA**: 12.8
-- **Platform**: Linux (x86_64-linux, aarch64-linux)
+## Troubleshooting
 
-## Documentation
+### Build fails with "CUDA not found"
 
-This project includes comprehensive documentation:
+Ensure you're building on a Linux system. GPU builds are Linux-only.
 
-- **[README.md](./README.md)** - This file (overview and reference)
-- **[QUICKSTART.md](./QUICKSTART.md)** - Quick start guide with examples
-- **[BUILD_MATRIX.md](./BUILD_MATRIX.md)** - Complete build matrix
-- **[RECIPE_TEMPLATE.md](./RECIPE_TEMPLATE.md)** - Templates for creating new variants
+### Build fails with "unknown architecture"
 
-## GPU Architecture Patterns (CRITICAL!)
+Verify the SM architecture is supported by your CUDA version:
+- SM110/SM121 require CUDA 13.0+ (this branch)
+- SM103 requires CUDA 12.9+ (cuda-12_9 branch)
 
-TorchAudio must match the GPU architecture pattern used by the corresponding PyTorch build. There are **TWO different patterns**:
+### CPU build performance is poor
 
-### Pattern Type A: sm_XXX format
-
-**Used by:** SM121, SM110, SM103, SM100, SM90, SM89, SM80 (7 architectures)
-
+Consider using Intel MKL instead of OpenBLAS:
 ```nix
-gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES
-gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST
-gpuTargets = [ gpuArchSM ]; # Uses sm_121
+blasBackend = mkl;  # Instead of openblas
 ```
 
-### Pattern Type B: Decimal format
+### Build takes too long
 
-**Used by:** SM120, SM86 (2 architectures)
-
-```nix
-# PyTorch's CMake accepts numeric format (12.0/9.0/8.9/etc) not sm_XXX
-gpuArchNum = "12.0";       # Or "11.0", "10.3", "10.0", "9.0", "8.9", "8.6", "8.0"
-# NO gpuArchSM variable
-gpuTargets = [ gpuArchNum ]; # Uses numeric format directly
-```
-
-**ALWAYS check PyTorch pattern before creating variants!**
-
+Use parallel compilation:
 ```bash
-# Verify pattern for any architecture
-grep -E "gpuArchNum|gpuArchSM|gpuTargets" \
-  ../build-pytorch/.flox/pkgs/pytorch-python313-cuda12_8-sm{ARCH}-*.nix | head -5
+NIX_BUILD_CORES=8 flox build <variant>
 ```
 
-## Relationship to build-pytorch
+## Related Documentation
 
-This project is a companion to `build-pytorch` and follows the same:
-- Architecture support matrix
-- Naming conventions
-- Build patterns
-- Documentation structure
-
-## Next Steps
-
-1. ✅ **Branch variants created**: 12 variants (SM121 + SM110, CUDA 13.0)
-2. **PyTorch dependency**: Implement proper dependency on `build-pytorch` packages
-3. **Testing**: Add test scripts for verifying builds (TEST_GUIDE.md)
-4. **CI/CD**: Add automated builds for all variants
+- [PyTorch CUDA Architecture List](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
+- [Flox Build Documentation](https://flox.dev/docs/reference/command-reference/flox-build/)
+- [TorchAudio Documentation](https://pytorch.org/audio/stable/index.html)
+- **[../build-pytorch/](../build-pytorch/)** - PyTorch build environment (dependency)
 
 ## Contributing
 
-This is a personal build system for creating optimized TorchAudio variants. The structure follows the established patterns from `build-pytorch`.
+To add new variants or improve builds:
 
-## Notes
-
-- Builds are architecture-specific and won't work on mismatched hardware
-- CUDA builds require NVIDIA drivers (570+ for Blackwell)
-- Build times vary (20-40 minutes typical for TorchAudio)
-- TorchAudio must match PyTorch version for ABI compatibility
+1. Test locally with `flox build <variant>`
+2. Verify the built package works: `./result-<variant>/bin/python -c "import torch, torchaudio; print(torchaudio.__version__)"`
+3. Commit changes and create a pull request
+4. Document the new variant in this README
 
 ## License
 
-Follows the licensing of TorchAudio and nixpkgs packages.
+This build environment configuration is MIT licensed. TorchAudio itself is BSD-2-Clause licensed.
