@@ -19,7 +19,7 @@ let
 
   # GPU target
   gpuArchNum = "80";
-  gpuArchSM = "sm_80";
+  gpuArchSM = "8.0";
 
   # CPU optimization
   cpuFlags = [
@@ -62,7 +62,7 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: sm_80"
+      echo "GPU Target: 8.0 (Ampere A100)"
       echo "CPU Features: Optimized"
       echo "CUDA: Enabled"
       echo "PyTorch: ${customPytorch.version}"

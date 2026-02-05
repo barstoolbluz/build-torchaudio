@@ -19,7 +19,7 @@ let
 
   # GPU target
   gpuArchNum = "86";
-  gpuArchSM = "sm_86";
+  gpuArchSM = "8.6";
 
   # CPU optimization
   cpuFlags = [
@@ -62,7 +62,7 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: sm_86"
+      echo "GPU Target: 8.6 (Ampere RTX 30-series)"
       echo "CPU Features: Optimized"
       echo "CUDA: Enabled"
       echo "PyTorch: ${customPytorch.version}"
