@@ -385,11 +385,9 @@ build-torchaudio/
 │       ├── torchaudio-python313-cuda12_8-sm100-*.nix   # 6 SM100 variants
 │       └── torchaudio-python313-cuda12_8-sm120-*.nix   # 6 SM120 variants
 ├── README.md
-├── FLOX.md
 ├── QUICKSTART.md
 ├── BUILD_MATRIX.md
-├── RECIPE_TEMPLATE.md
-└── TEST_GUIDE.md
+└── RECIPE_TEMPLATE.md
 ```
 
 ### How It Works
@@ -573,7 +571,6 @@ NIX_BUILD_CORES=8 flox build <variant>
 - [PyTorch CUDA Architecture List](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 - [Flox Build Documentation](https://flox.dev/docs/reference/command-reference/flox-build/)
 - [TorchAudio Documentation](https://pytorch.org/audio/stable/index.html)
-- [FLOX.md](./FLOX.md) - Complete Flox environment guide
 
 ## Contributing
 
