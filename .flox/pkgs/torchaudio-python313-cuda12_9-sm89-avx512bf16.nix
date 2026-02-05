@@ -12,9 +12,6 @@ let
       allowUnfree = true;  # Required for CUDA packages
       cudaSupport = true;
     };
-    overlays = [
-      (final: prev: { cudaPackages = final.cudaPackages_12_9; })
-    ];
   };
 
   # GPU target

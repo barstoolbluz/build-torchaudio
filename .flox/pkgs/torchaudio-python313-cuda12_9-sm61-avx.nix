@@ -12,9 +12,6 @@ let
       allowUnfree = true;  # Required for CUDA packages
       cudaSupport = true;
     };
-    overlays = [
-      (final: prev: { cudaPackages = final.cudaPackages_12_9; })
-    ];
   };
 
   # GPU target: SM61 (Pascal consumer - GTX 1070, 1080, 1080 Ti)
