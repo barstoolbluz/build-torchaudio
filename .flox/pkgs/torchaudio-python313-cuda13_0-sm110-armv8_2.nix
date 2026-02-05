@@ -17,7 +17,7 @@ let
 
   # GPU target: SM110 (NVIDIA DRIVE Thor/Orin+ - Automotive/Edge)
   gpuArchNum = "110";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_110";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  gpuArchSM = "11.0";      # For TORCH_CUDA_ARCH_LIST (dot notation)
 
   # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [

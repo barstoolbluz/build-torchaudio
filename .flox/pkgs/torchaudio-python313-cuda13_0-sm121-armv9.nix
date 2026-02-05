@@ -18,7 +18,7 @@ let
 
   # GPU target: SM121 (DGX Spark - specialized datacenter)
   gpuArchNum = "121";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_121";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  gpuArchSM = "12.1";      # For TORCH_CUDA_ARCH_LIST (dot notation)
 
   # CPU optimization: ARMv9 with SVE2 and other advanced features
   cpuFlags = [
