@@ -17,7 +17,7 @@ let
 
   # GPU target: SM80 (Ampere A100/A30 - Datacenter)
   gpuArchNum = "80";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_80";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  gpuArchSM = "8.0";      # For TORCH_CUDA_ARCH_LIST (dot notation)
 
   # CPU optimization: AVX2 (broader compatibility)
   cpuFlags = [

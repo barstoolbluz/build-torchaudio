@@ -17,7 +17,7 @@ let
 
   # GPU target: SM89 (Ada Lovelace RTX 4090/L40)
   gpuArchNum = "89";        # For CMAKE_CUDA_ARCHITECTURES (just the integer)
-  gpuArchSM = "sm_89";      # For TORCH_CUDA_ARCH_LIST (with sm_ prefix)
+  gpuArchSM = "8.9";      # For TORCH_CUDA_ARCH_LIST (dot notation)
 
   # CPU optimization: ARMv8.2 with FP16 and dot product
   cpuFlags = [
