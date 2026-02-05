@@ -352,7 +352,10 @@ build-torchaudio/
 │   └── pkgs/                      # Nix expression builds (12 variants on this branch)
 │       ├── torchaudio-python313-cuda13_0-sm110-*.nix   # 6 SM110 variants (DRIVE Thor)
 │       └── torchaudio-python313-cuda13_0-sm121-*.nix   # 6 SM121 variants (DGX Spark)
-└── README.md
+├── README.md
+├── QUICKSTART.md
+├── BUILD_MATRIX.md
+└── RECIPE_TEMPLATE.md
 ```
 
 ### How It Works
