@@ -41,6 +41,7 @@ let
       # Overlay 3: Patch OpenCV for CUDA 13.0 compatibility
       # This fixes: 'struct cudaDeviceProp' has no member named 'clockRate' (and others)
       # PR #27636: https://github.com/opencv/opencv/pull/27636
+      # Also patches opencv_contrib for thrust::not1 removal (commit 9a9b173)
       (final: prev: {
         opencv = prev.opencv.overrideAttrs (oldAttrs: {
           patches = (oldAttrs.patches or []) ++ [
@@ -50,6 +51,18 @@ let
               hash = "sha256-zeDA8K7k6Sff5Xw/9XmqbCg/dhj9iu095rXuZTdj8PY=";
             })
           ];
+
+          # Patch opencv_contrib for CUDA 13.0 (thrust::not1 removal)
+          postPatch = (oldAttrs.postPatch or "") + ''
+            if [ -d "$TMPDIR/opencv_contrib" ]; then
+              echo "Patching opencv_contrib for CUDA 13.0..."
+              patch -p1 -d "$TMPDIR/opencv_contrib" < ${final.fetchpatch {
+                name = "opencv-contrib-cuda-13.0-videostab-fix.patch";
+                url = "https://github.com/opencv/opencv_contrib/commit/9a9b173cd178e7c07a98896a009c2a2021a6b247.patch";
+                hash = "sha256-nUCqFTRo8HMQvhr1o9FNDgRrvLVOZLOsa75Bt5nfw/E=";
+              }}
+            fi
+          '';
         });
       })
 
