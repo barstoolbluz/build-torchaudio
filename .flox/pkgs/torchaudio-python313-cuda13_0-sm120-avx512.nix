@@ -4,8 +4,9 @@
 # NOTE: This uses the same PyTorch 2.10.0 overlay approach as build-pytorch.
 # See build-pytorch/docs/pytorch-2.10-cuda13-build-notes.md for details on fixes.
 #
-# MAGMA is enabled via a CUDA 13.0 compatibility patch.
-# Patch reference: https://github.com/icl-utk-edu/magma/issues/61
+# CUDA 13.0 compatibility patches:
+# - MAGMA: https://github.com/icl-utk-edu/magma/commit/235aefb7b064954fce09d035c69907ba8a87cbcd
+# - OpenCV: https://github.com/opencv/opencv/commit/f0888a10e8266b2202d930c6974433a421e6f9a7
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -37,7 +38,22 @@ let
         });
       })
 
-      # Overlay 3: Upgrade PyTorch to 2.10.0
+      # Overlay 3: Patch OpenCV for CUDA 13.0 compatibility
+      # This fixes: 'struct cudaDeviceProp' has no member named 'clockRate' (and others)
+      # PR #27636: https://github.com/opencv/opencv/pull/27636
+      (final: prev: {
+        opencv = prev.opencv.overrideAttrs (oldAttrs: {
+          patches = (oldAttrs.patches or []) ++ [
+            (final.fetchpatch {
+              name = "opencv-cuda-13.0-deviceprop-fix.patch";
+              url = "https://github.com/opencv/opencv/commit/f0888a10e8266b2202d930c6974433a421e6f9a7.patch";
+              hash = "sha256-Vt7YFoDqMrg4B//JMTpdmWb3wipIgo+UejBT//ZN/ho=";
+            })
+          ];
+        });
+      })
+
+      # Overlay 4: Upgrade PyTorch to 2.10.0
       (final: prev: {
         python3Packages = prev.python3Packages.override {
           overrides = pfinal: pprev: {
