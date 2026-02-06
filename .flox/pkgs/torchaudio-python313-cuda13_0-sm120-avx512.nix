@@ -56,7 +56,7 @@ let
           postPatch = (oldAttrs.postPatch or "") + ''
             if [ -d "opencv_contrib" ]; then
               echo "Patching opencv_contrib for CUDA 13.0 (thrust::not1 removal)..."
-              patch -p1 -d opencv_contrib < ${final.fetchpatch {
+              patch -p2 -d opencv_contrib < ${final.fetchpatch {
                 name = "opencv-contrib-cuda-13.0-videostab-fix.patch";
                 url = "https://github.com/opencv/opencv_contrib/commit/9a9b173cd178e7c07a98896a009c2a2021a6b247.patch";
                 hash = "sha256-W3eBv7HnoUrNBupXAykv5UsHcYG/o9P55VIddRYWrF8=";
