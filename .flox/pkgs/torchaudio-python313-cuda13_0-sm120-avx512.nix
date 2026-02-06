@@ -47,7 +47,7 @@ let
             (final.fetchpatch {
               name = "opencv-cuda-13.0-deviceprop-fix.patch";
               url = "https://github.com/opencv/opencv/commit/f0888a10e8266b2202d930c6974433a421e6f9a7.patch";
-              hash = "sha256-Vt7YFoDqMrg4B//JMTpdmWb3wipIgo+UejBT//ZN/ho=";
+              hash = "sha256-zeDA8K7k6Sff5Xw/9XmqbCg/dhj9iu095rXuZTdj8PY=";
             })
           ];
         });
