@@ -144,15 +144,14 @@ let
     '';
 
     # FindCUDAToolkit.cmake delegating stub
+    # Uses CMAKE_ROOT to directly include CMake's built-in module, avoiding infinite recursion when installed
     postPatch = (oldAttrs.postPatch or "") + ''
       mkdir -p cmake/Modules
       cat > cmake/Modules/FindCUDAToolkit.cmake << 'EOF'
 # Delegating stub for FindCUDAToolkit
+# Directly include CMake's built-in module to avoid infinite recursion
 if(NOT CUDAToolkit_FOUND)
-  set(_orig_module_path "''${CMAKE_MODULE_PATH}")
-  list(FILTER CMAKE_MODULE_PATH EXCLUDE REGEX "cmake/Modules")
-  include(FindCUDAToolkit)
-  set(CMAKE_MODULE_PATH "''${_orig_module_path}")
+  include(''${CMAKE_ROOT}/Modules/FindCUDAToolkit.cmake)
 endif()
 EOF
     '';
