@@ -3,11 +3,11 @@
 ## Objective
 
 1. **Refactor** all TorchAudio build recipes to use the working three-overlay pattern
-2. **Create** SM120 x86 variants to align with PyTorch/TorchVision
+2. **Create** SM120-AVX variant to align with PyTorch/TorchVision
 
 ## Background
 
-All existing TorchAudio variants are using:
+Most TorchAudio variants are using:
 - Old nixpkgs pin (`fe5e41d7...`) without CUDA 13.0 fixes
 - No MAGMA patch overlay
 - No PyTorch 2.10.0 upgrade overlay
@@ -17,7 +17,15 @@ They need to be updated to the three-overlay pattern:
 - Overlay 2: MAGMA patch for CUDA 13.0 (`cuda-13.0-clockrate-fix.patch`)
 - Overlay 3: PyTorch 2.10.0 source upgrade
 
-## Cleanup Completed
+## Completed Work
+
+### SM120-AVX512 Created
+
+`torchaudio-python313-cuda13_0-sm120-avx512.nix` - **PRIMARY x86 VARIANT** (commit `eeda744`)
+
+Use this as the reference implementation for refactoring other variants.
+
+### Invalid Files Deleted
 
 **8 invalid files were deleted** (SM110/SM121 paired with x86 ISAs - impossible combinations):
 - SM110 (DRIVE Thor) is an ARM-based automotive platform
@@ -48,16 +56,16 @@ These need the three-overlay pattern:
 
 ## New Variants to Create
 
-SM120 (RTX 5090) x86 variants to align with PyTorch/TorchVision:
-
 | Variant | GPU Target | CPU ISA | Platform | Notes |
 |---------|------------|---------|----------|-------|
 | `sm120-avx` | SM120 (RTX 5090) | AVX | x86_64-linux | Broader x86 compatibility |
-| `sm120-avx512` | SM120 (RTX 5090) | AVX-512 | x86_64-linux | Primary x86 variant |
 
 ## Reference Implementation
 
-Use TorchVision's working variants as reference:
+Use the newly created TorchAudio variant as reference:
+- **x86 reference**: `.flox/pkgs/torchaudio-python313-cuda13_0-sm120-avx512.nix`
+
+Or TorchVision's working variants:
 - **x86 reference**: `/home/daedalus/dev/builds/build-torchvision/.flox/pkgs/torchvision-python313-cuda13_0-sm120-avx512.nix`
 - **ARM reference**: `/home/daedalus/dev/builds/build-torchvision/.flox/pkgs/torchvision-python313-cuda13_0-sm121-armv9.nix`
 
@@ -107,6 +115,6 @@ After refactoring each variant:
 | SM110 | ARMv8.2 | ✓ (refactor) | ✓ | ✓ (refactor) | Valid ARM combo |
 | SM110 | ARMv9 | ✓ (refactor) | ✓ | ✓ (refactor) | Valid ARM combo |
 | SM120 | AVX | ✓ (refactor) | create | **create** | Broader x86 compat |
-| SM120 | AVX-512 | ✓ | ✓ | **create** | Primary x86 variant |
+| SM120 | AVX-512 | ✓ | ✓ | **✓** | Primary x86 variant |
 | SM121 | ARMv8.2 | create | ✓ | ✓ (refactor) | Valid ARM combo |
 | SM121 | ARMv9 | create | ✓ | ✓ (refactor) | Valid ARM combo |
