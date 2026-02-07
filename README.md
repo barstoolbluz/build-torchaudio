@@ -38,45 +38,54 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 
 **This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — full coverage of all GPU architectures from SM75 (Turing) through SM121 (DGX Spark).
 
-### Variant Matrix (this branch)
+### Complete Variant Matrix — 41 Variants
 
-This branch provides 41 variants covering all GPU architectures and CPU ISAs:
+*Package pattern: `torchaudio-python313-cuda13_0-{gpu}-{cpu}` | CPU-only: `torchaudio-python313-cpu-{cpu}`*
+*Click package names to view build recipes.*
 
-#### GPU Variants (x86-64) — 32 total
-
-| GPU Architecture | AVX2 | AVX-512 | AVX-512 BF16 | AVX-512 VNNI |
-|------------------|------|---------|--------------|--------------|
-| **SM120 (Blackwell)** | `sm120-avx2` | `sm120-avx512` | `sm120-avx512bf16` | `sm120-avx512vnni` |
-| **SM103 (B300)** | `sm103-avx2` | `sm103-avx512` | `sm103-avx512bf16` | `sm103-avx512vnni` |
-| **SM100 (B100/B200)** | `sm100-avx2` | `sm100-avx512` | `sm100-avx512bf16` | `sm100-avx512vnni` |
-| **SM90 (Hopper)** | `sm90-avx2` | `sm90-avx512` | `sm90-avx512bf16` | `sm90-avx512vnni` |
-| **SM89 (Ada)** | `sm89-avx2` | `sm89-avx512` | `sm89-avx512bf16` | `sm89-avx512vnni` |
-| **SM86 (Ampere)** | `sm86-avx2` | `sm86-avx512` | `sm86-avx512bf16` | `sm86-avx512vnni` |
-| **SM80 (Ampere DC)** | `sm80-avx2` | `sm80-avx512` | `sm80-avx512bf16` | `sm80-avx512vnni` |
-| **SM75 (Turing)** | `sm75-avx2` | `sm75-avx512` | `sm75-avx512bf16` | `sm75-avx512vnni` |
-
-All x86 packages follow the pattern: `torchaudio-python313-cuda13_0-{gpu}-{cpu}`
-
-**Note:** SM110 (DRIVE Thor) and SM121 (DGX Spark) are ARM-only platforms and do not have x86 variants.
-
-#### GPU Variants (ARM) — 4 total
-
-| GPU Architecture | ARMv8.2 | ARMv9 |
-|------------------|---------|-------|
-| **SM121 (DGX Spark)** | `sm121-armv8_2` | `sm121-armv9` |
-| **SM110 (DRIVE Thor)** | `sm110-armv8_2` | `sm110-armv9` |
-
-ARM variants are available for GPU architectures with ARM deployment targets (DGX Spark with Grace CPU, DRIVE Thor).
-
-#### CPU-Only Variants (x86-64) — 5 total
-
-| CPU ISA | Package Name | Use Case |
-|---------|--------------|----------|
-| AVX | `torchaudio-python313-cpu-avx` | Maximum compatibility (Sandy Bridge+ 2011+) |
-| AVX2 | `torchaudio-python313-cpu-avx2` | Broad compatibility, development |
-| AVX-512 | `torchaudio-python313-cpu-avx512` | General workloads |
-| AVX-512 BF16 | `torchaudio-python313-cpu-avx512bf16` | BF16 training on CPU |
-| AVX-512 VNNI | `torchaudio-python313-cpu-avx512vnni` | INT8 inference on CPU |
+| GPU | CPU ISA | Package | Use Case |
+|-----|---------|---------|----------|
+| **CPU-only** | AVX | [`cpu-avx`](.flox/pkgs/torchaudio-python313-cpu-avx.nix) | Maximum compatibility (Sandy Bridge+) |
+| | AVX2 | [`cpu-avx2`](.flox/pkgs/torchaudio-python313-cpu-avx2.nix) | Development, broad compatibility |
+| | AVX-512 | [`cpu-avx512`](.flox/pkgs/torchaudio-python313-cpu-avx512.nix) | General FP32 workloads |
+| | AVX-512 BF16 | [`cpu-avx512bf16`](.flox/pkgs/torchaudio-python313-cpu-avx512bf16.nix) | BF16 mixed-precision training |
+| | AVX-512 VNNI | [`cpu-avx512vnni`](.flox/pkgs/torchaudio-python313-cpu-avx512vnni.nix) | INT8 quantized inference |
+| **SM75 (Turing)** | AVX2 | [`sm75-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm75-avx2.nix) | T4/RTX 2080 Ti + broad compatibility |
+| | AVX-512 | [`sm75-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm75-avx512.nix) | T4/RTX 2080 Ti + general workloads |
+| | AVX-512 BF16 | [`sm75-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm75-avx512bf16.nix) | T4/RTX 2080 Ti + BF16 training |
+| | AVX-512 VNNI | [`sm75-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm75-avx512vnni.nix) | T4/RTX 2080 Ti + INT8 inference |
+| **SM80 (Ampere DC)** | AVX2 | [`sm80-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm80-avx2.nix) | A100/A30 + broad compatibility |
+| | AVX-512 | [`sm80-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm80-avx512.nix) | A100/A30 + general workloads |
+| | AVX-512 BF16 | [`sm80-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm80-avx512bf16.nix) | A100/A30 + BF16 training |
+| | AVX-512 VNNI | [`sm80-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm80-avx512vnni.nix) | A100/A30 + INT8 inference |
+| **SM86 (Ampere)** | AVX2 | [`sm86-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm86-avx2.nix) | RTX 3090/A40 + broad compatibility |
+| | AVX-512 | [`sm86-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm86-avx512.nix) | RTX 3090/A40 + general workloads |
+| | AVX-512 BF16 | [`sm86-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm86-avx512bf16.nix) | RTX 3090/A40 + BF16 training |
+| | AVX-512 VNNI | [`sm86-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm86-avx512vnni.nix) | RTX 3090/A40 + INT8 inference |
+| **SM89 (Ada)** | AVX2 | [`sm89-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm89-avx2.nix) | RTX 4090/L40 + broad compatibility |
+| | AVX-512 | [`sm89-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm89-avx512.nix) | RTX 4090/L40 + general workloads |
+| | AVX-512 BF16 | [`sm89-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm89-avx512bf16.nix) | RTX 4090/L40 + BF16 training |
+| | AVX-512 VNNI | [`sm89-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm89-avx512vnni.nix) | RTX 4090/L40 + INT8 inference |
+| **SM90 (Hopper)** | AVX2 | [`sm90-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx2.nix) | H100/H200 + broad compatibility |
+| | AVX-512 | [`sm90-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx512.nix) | H100/H200 + general workloads |
+| | AVX-512 BF16 | [`sm90-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx512bf16.nix) | H100/H200 + BF16 training |
+| | AVX-512 VNNI | [`sm90-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx512vnni.nix) | H100/H200 + INT8 inference |
+| **SM100 (Blackwell DC)** | AVX2 | [`sm100-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm100-avx2.nix) | B100/B200 + broad compatibility |
+| | AVX-512 | [`sm100-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm100-avx512.nix) | B100/B200 + general workloads |
+| | AVX-512 BF16 | [`sm100-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm100-avx512bf16.nix) | B100/B200 + BF16 training |
+| | AVX-512 VNNI | [`sm100-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm100-avx512vnni.nix) | B100/B200 + INT8 inference |
+| **SM103 (B300)** | AVX2 | [`sm103-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm103-avx2.nix) | B300 + broad compatibility |
+| | AVX-512 | [`sm103-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm103-avx512.nix) | B300 + general workloads |
+| | AVX-512 BF16 | [`sm103-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm103-avx512bf16.nix) | B300 + BF16 training |
+| | AVX-512 VNNI | [`sm103-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm103-avx512vnni.nix) | B300 + INT8 inference |
+| **SM110 (DRIVE Thor)** | ARMv8.2 | [`sm110-armv8_2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm110-armv8_2.nix) | DRIVE Thor + Graviton2/older ARM |
+| | ARMv9 | [`sm110-armv9`](.flox/pkgs/torchaudio-python313-cuda13_0-sm110-armv9.nix) | DRIVE Thor + Grace/Graviton3+ |
+| **SM120 (Blackwell)** | AVX2 | [`sm120-avx2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm120-avx2.nix) | RTX 5090 + broad compatibility |
+| | AVX-512 | [`sm120-avx512`](.flox/pkgs/torchaudio-python313-cuda13_0-sm120-avx512.nix) | RTX 5090 + general workloads |
+| | AVX-512 BF16 | [`sm120-avx512bf16`](.flox/pkgs/torchaudio-python313-cuda13_0-sm120-avx512bf16.nix) | RTX 5090 + BF16 training |
+| | AVX-512 VNNI | [`sm120-avx512vnni`](.flox/pkgs/torchaudio-python313-cuda13_0-sm120-avx512vnni.nix) | RTX 5090 + INT8 inference |
+| **SM121 (DGX Spark)** | ARMv8.2 | [`sm121-armv8_2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm121-armv8_2.nix) | DGX Spark + Graviton2/older ARM |
+| | ARMv9 | [`sm121-armv9`](.flox/pkgs/torchaudio-python313-cuda13_0-sm121-armv9.nix) | DGX Spark + Grace/Graviton3+ |
 
 ### Variants on Other Branches
 
