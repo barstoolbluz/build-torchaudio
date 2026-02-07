@@ -311,13 +311,13 @@ flox build torchaudio-python313-cuda12_8-sm90-armv9
 flox activate
 
 # Build a specific variant
-flox build torchaudio-python313-cuda13_0-sm121-avx512
+flox build torchaudio-python313-cuda13_0-sm90-avx512
 
-# The result will be in ./result-torchaudio-python313-cuda13_0-sm121-avx512/
-ls -lh result-torchaudio-python313-cuda13_0-sm121-avx512/
+# The result will be in ./result-torchaudio-python313-cuda13_0-sm90-avx512/
+ls -lh result-torchaudio-python313-cuda13_0-sm90-avx512/
 
 # Test the build
-./result-torchaudio-python313-cuda13_0-sm121-avx512/bin/python -c "
+./result-torchaudio-python313-cuda13_0-sm90-avx512/bin/python -c "
 import torch, torchaudio
 print(f'PyTorch: {torch.__version__}')
 print(f'TorchAudio: {torchaudio.__version__}')
@@ -367,7 +367,7 @@ customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
 (nixpkgs_pinned.python3Packages.torchaudio.override {
   torch = customPytorch;
 }).overrideAttrs (oldAttrs: {
-  pname = "torchaudio-python313-cuda13_0-sm121-avx512";
+  pname = "torchaudio-python313-cuda13_0-sm90-avx512";
   ...
 })
 ```
@@ -429,11 +429,11 @@ git remote add origin <your-repo-url>
 git push origin master
 
 # Publish to your Flox organization
-flox publish -o <your-org> torchaudio-python313-cuda13_0-sm121-avx512
+flox publish -o <your-org> torchaudio-python313-cuda13_0-sm90-avx512
 flox publish -o <your-org> torchaudio-python313-cuda13_0-sm110-armv9
 
 # Users install with:
-flox install <your-org>/torchaudio-python313-cuda13_0-sm121-avx512
+flox install <your-org>/torchaudio-python313-cuda13_0-sm90-avx512
 ```
 
 ## Build Times & Requirements
@@ -457,10 +457,10 @@ To add more variants:
 4. Commit: `git add .flox/pkgs/your-new-variant.nix && git commit`
 5. Build: `flox build your-new-variant`
 
-### Example: Adding SM121 (DGX Spark) with AVX-512
+### Example: Adding SM90 (Hopper) with AVX-512
 
 ```nix
-# .flox/pkgs/torchaudio-python313-cuda13_0-sm121-avx512.nix
+# .flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx512.nix
 { pkgs ? import <nixpkgs> {} }:
 
 let
@@ -474,9 +474,9 @@ let
     };
   };
 
-  # GPU target: SM121 (DGX Spark)
-  gpuArchNum = "121";
-  gpuArchSM = "sm_121";
+  # GPU target: SM90 (Hopper)
+  gpuArchNum = "90";
+  gpuArchSM = "sm_90";
 
   # CPU optimization: AVX-512
   cpuFlags = [
@@ -505,7 +505,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda13_0-sm121-avx512";
+    pname = "torchaudio-python313-cuda13_0-sm90-avx512";
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
@@ -516,12 +516,12 @@ in
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA DGX Spark (SM121) + AVX-512";
+      description = "TorchAudio for NVIDIA Hopper (SM90) + AVX-512";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA DGX Spark architecture (SM121)
+        - GPU: NVIDIA Hopper architecture (SM90) - H100, H200
         - CPU: x86-64 with AVX-512 instruction set
-        - CUDA: 13.0 with compute capability 12.1
+        - CUDA: 13.0 with compute capability 9.0
         - BLAS: cuBLAS for GPU operations
         - Python: 3.13
       '';
