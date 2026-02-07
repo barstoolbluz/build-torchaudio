@@ -1,5 +1,5 @@
-# TorchAudio with PyTorch 2.10.0 for NVIDIA DRIVE Thor (SM110) + ARMv9
-# Package name: torchaudio-python313-cuda13_0-sm110-armv9
+# TorchAudio with PyTorch 2.10.0 for NVIDIA Hopper (SM90: H100, L40S) + AVX-512 VNNI
+# Package name: torchaudio-python313-cuda13_0-sm90-avx512vnni
 #
 # NOTE: This uses the same PyTorch 2.10.0 overlay approach as build-pytorch.
 # See build-pytorch/docs/pytorch-2.10-cuda13-build-notes.md for details on fixes.
@@ -90,12 +90,17 @@ let
     ];
   };
 
-  # GPU target: SM110 (NVIDIA DRIVE Thor - Automotive/Edge)
-  gpuArchSM = "11.0";
+  # GPU target: SM90 (Hopper - H100, L40S)
+  gpuArchSM = "9.0";
 
-  # CPU optimization: ARMv9 with SVE and SVE2
+  # CPU optimization: AVX-512 with VNNI
   cpuFlags = [
-    "-march=armv9-a+sve+sve2"  # ARMv9 with Scalable Vector Extensions
+    "-mavx512f"     # AVX-512 Foundation
+    "-mavx512dq"    # Doubleword and Quadword instructions
+    "-mavx512vl"    # Vector Length extensions
+    "-mavx512bw"    # Byte and Word instructions
+    "-mavx512vnni"  # Vector Neural Network Instructions
+    "-mfma"         # Fused multiply-add
   ];
 
   # Custom PyTorch 2.10.0 with all CUDA 13.0 fixes
@@ -103,7 +108,7 @@ let
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
-    pname = "pytorch210-for-torchaudio-sm110-armv9";
+    pname = "pytorch210-for-torchaudio-sm90-avx512vnni";
 
     # Clear patches
     patches = [];
@@ -157,7 +162,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda13_0-sm110-armv9";
+    pname = "torchaudio-python313-cuda13_0-sm90-avx512vnni";
 
     # Limit build parallelism
     ninjaFlags = [ "-j32" ];
@@ -171,8 +176,8 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: ${gpuArchSM} (NVIDIA DRIVE Thor)"
-      echo "CPU Features: ARMv9 + SVE + SVE2"
+      echo "GPU Target: ${gpuArchSM} (Hopper: H100, L40S)"
+      echo "CPU Features: AVX-512 + VNNI"
       echo "CUDA: 13.0"
       echo "PyTorch: 2.10.0 (with CUDA 13.0 fixes)"
       echo "MAGMA: Enabled (with CUDA 13.0 patch)"
@@ -181,23 +186,21 @@ in
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA DRIVE Thor (SM110) + ARMv9 with PyTorch 2.10.0";
+      description = "TorchAudio for NVIDIA H100/L40S (SM90, Hopper) + AVX-512 VNNI with PyTorch 2.10.0";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA DRIVE Thor (SM110) - Automotive/Edge AI
-        - CPU: ARMv9 with Scalable Vector Extensions (SVE/SVE2)
-        - CUDA: 13.0 with compute capability 11.0
+        - GPU: NVIDIA Hopper architecture (SM90) - H100, L40S
+        - CPU: x86-64 with AVX-512 VNNI instruction set
+        - CUDA: 13.0 with compute capability 9.0
         - PyTorch: 2.10.0 (with all CUDA 13.0 compatibility fixes)
         - MAGMA: Enabled (patched for CUDA 13.0)
         - Python: 3.13
 
         Hardware requirements:
-        - GPU: NVIDIA DRIVE Thor, Orin+ (Automotive/Embedded platforms)
-        - CPU: AWS Graviton3+, NVIDIA Grace, ARM Neoverse V1+
+        - GPU: H100, L40S, or other SM90 GPUs
+        - CPU: Intel Cascade Lake+ (2019+), AMD Zen 4+ (2022+)
         - Driver: NVIDIA 580+ required
-
-        Maximum performance for next-gen ARM automotive platforms.
       '';
-      platforms = [ "aarch64-linux" ];
+      platforms = [ "x86_64-linux" ];
     };
   })

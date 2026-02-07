@@ -1,5 +1,5 @@
-# TorchAudio with PyTorch 2.10.0 for NVIDIA DRIVE Thor (SM110) + ARMv9
-# Package name: torchaudio-python313-cuda13_0-sm110-armv9
+# TorchAudio with PyTorch 2.10.0 for NVIDIA DGX Spark (SM121) + AVX-512
+# Package name: torchaudio-python313-cuda13_0-sm121-avx512
 #
 # NOTE: This uses the same PyTorch 2.10.0 overlay approach as build-pytorch.
 # See build-pytorch/docs/pytorch-2.10-cuda13-build-notes.md for details on fixes.
@@ -90,12 +90,16 @@ let
     ];
   };
 
-  # GPU target: SM110 (NVIDIA DRIVE Thor - Automotive/Edge)
-  gpuArchSM = "11.0";
+  # GPU target: SM121 (DGX Spark)
+  gpuArchSM = "12.1";
 
-  # CPU optimization: ARMv9 with SVE and SVE2
+  # CPU optimization: AVX-512
   cpuFlags = [
-    "-march=armv9-a+sve+sve2"  # ARMv9 with Scalable Vector Extensions
+    "-mavx512f"    # AVX-512 Foundation
+    "-mavx512dq"   # Doubleword and Quadword instructions
+    "-mavx512vl"   # Vector Length extensions
+    "-mavx512bw"   # Byte and Word instructions
+    "-mfma"        # Fused multiply-add
   ];
 
   # Custom PyTorch 2.10.0 with all CUDA 13.0 fixes
@@ -103,7 +107,7 @@ let
     cudaSupport = true;
     gpuTargets = [ gpuArchSM ];
   }).overrideAttrs (oldAttrs: {
-    pname = "pytorch210-for-torchaudio-sm110-armv9";
+    pname = "pytorch210-for-torchaudio-sm121-avx512";
 
     # Clear patches
     patches = [];
@@ -157,7 +161,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-cuda13_0-sm110-armv9";
+    pname = "torchaudio-python313-cuda13_0-sm121-avx512";
 
     # Limit build parallelism
     ninjaFlags = [ "-j32" ];
@@ -171,8 +175,8 @@ in
       echo "========================================="
       echo "TorchAudio Build Configuration"
       echo "========================================="
-      echo "GPU Target: ${gpuArchSM} (NVIDIA DRIVE Thor)"
-      echo "CPU Features: ARMv9 + SVE + SVE2"
+      echo "GPU Target: ${gpuArchSM} (DGX Spark)"
+      echo "CPU Features: AVX-512"
       echo "CUDA: 13.0"
       echo "PyTorch: 2.10.0 (with CUDA 13.0 fixes)"
       echo "MAGMA: Enabled (with CUDA 13.0 patch)"
@@ -181,23 +185,21 @@ in
     '';
 
     meta = oldAttrs.meta // {
-      description = "TorchAudio for NVIDIA DRIVE Thor (SM110) + ARMv9 with PyTorch 2.10.0";
+      description = "TorchAudio for NVIDIA DGX Spark (SM121) + AVX-512 with PyTorch 2.10.0";
       longDescription = ''
         Custom TorchAudio build with targeted optimizations:
-        - GPU: NVIDIA DRIVE Thor (SM110) - Automotive/Edge AI
-        - CPU: ARMv9 with Scalable Vector Extensions (SVE/SVE2)
-        - CUDA: 13.0 with compute capability 11.0
+        - GPU: NVIDIA DGX Spark architecture (SM121)
+        - CPU: x86-64 with AVX-512 instruction set
+        - CUDA: 13.0 with compute capability 12.1
         - PyTorch: 2.10.0 (with all CUDA 13.0 compatibility fixes)
         - MAGMA: Enabled (patched for CUDA 13.0)
         - Python: 3.13
 
         Hardware requirements:
-        - GPU: NVIDIA DRIVE Thor, Orin+ (Automotive/Embedded platforms)
-        - CPU: AWS Graviton3+, NVIDIA Grace, ARM Neoverse V1+
+        - GPU: DGX Spark or other SM121 GPUs
+        - CPU: Intel Skylake-X+ (2017+), AMD Zen 4+ (2022+)
         - Driver: NVIDIA 580+ required
-
-        Maximum performance for next-gen ARM automotive platforms.
       '';
-      platforms = [ "aarch64-linux" ];
+      platforms = [ "x86_64-linux" ];
     };
   })
