@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `cuda-13_0` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (12 variants)
+> **You are on the `cuda-13_0` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (36 variants)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -22,7 +22,7 @@ This repository provides TorchAudio builds across multiple branches, each target
 |--------|------------|---------|------|----------|---------------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | 44 | Stable baseline |
 | `cuda-12_9` | 2.9.1 | 2.9.1 | 12.9.1 | 50 | Full coverage + SM103 (B300) |
-| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **12** | **This branch** — SM110 (DRIVE Thor), SM121 (DGX Spark) |
+| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **36** | **This branch** — Full SM80–SM121 coverage |
 
 Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
@@ -36,28 +36,45 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 
 ## Build Matrix (this branch: cuda-13_0)
 
-**This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — specialized for SM110 (DRIVE Thor) and SM121 (DGX Spark) which require CUDA 13.0+.
+**This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — full coverage of all GPU architectures from SM80 (Ampere) through SM121 (DGX Spark).
 
 ### Variant Matrix (this branch)
 
-This branch contains specialized variants for SM110 (DRIVE Thor) and SM121 (DGX Spark) which require CUDA 13.0+:
+This branch provides 36 variants covering all GPU architectures and CPU ISAs:
 
-| GPU Architecture | CPU ISA | Package Name | Primary Use Case |
-|-----------------|---------|--------------|------------------|
-| **SM110 (DRIVE Thor)** | AVX2 | `torchaudio-python313-cuda13_0-sm110-avx2` | DRIVE Thor + broad CPU compatibility |
-| | AVX-512 | `torchaudio-python313-cuda13_0-sm110-avx512` | DRIVE Thor + general workloads |
-| | AVX-512 BF16 | `torchaudio-python313-cuda13_0-sm110-avx512bf16` | DRIVE Thor + BF16 training |
-| | AVX-512 VNNI | `torchaudio-python313-cuda13_0-sm110-avx512vnni` | DRIVE Thor + INT8 inference |
-| | ARMv8.2 | `torchaudio-python313-cuda13_0-sm110-armv8_2` | DRIVE Thor + ARM Graviton2 |
-| | ARMv9 | `torchaudio-python313-cuda13_0-sm110-armv9` | DRIVE Thor + ARM Grace |
-| **SM121 (DGX Spark)** | AVX2 | `torchaudio-python313-cuda13_0-sm121-avx2` | DGX Spark + broad CPU compatibility |
-| | AVX-512 | `torchaudio-python313-cuda13_0-sm121-avx512` | DGX Spark + general workloads |
-| | AVX-512 BF16 | `torchaudio-python313-cuda13_0-sm121-avx512bf16` | DGX Spark + BF16 training |
-| | AVX-512 VNNI | `torchaudio-python313-cuda13_0-sm121-avx512vnni` | DGX Spark + INT8 inference |
-| | ARMv8.2 | `torchaudio-python313-cuda13_0-sm121-armv8_2` | DGX Spark + ARM Graviton2 |
-| | ARMv9 | `torchaudio-python313-cuda13_0-sm121-armv9` | DGX Spark + ARM Grace |
+#### GPU Variants (x86-64) — 28 total
 
-For other GPU architectures (SM61–SM120, CPU-only), see the `main` or `cuda-12_9` branches.
+| GPU Architecture | AVX2 | AVX-512 | AVX-512 BF16 | AVX-512 VNNI |
+|------------------|------|---------|--------------|--------------|
+| **SM120 (Blackwell)** | `sm120-avx2` | `sm120-avx512` | `sm120-avx512bf16` | `sm120-avx512vnni` |
+| **SM103 (B300)** | `sm103-avx2` | `sm103-avx512` | `sm103-avx512bf16` | `sm103-avx512vnni` |
+| **SM100 (B100/B200)** | `sm100-avx2` | `sm100-avx512` | `sm100-avx512bf16` | `sm100-avx512vnni` |
+| **SM90 (Hopper)** | `sm90-avx2` | `sm90-avx512` | `sm90-avx512bf16` | `sm90-avx512vnni` |
+| **SM89 (Ada)** | `sm89-avx2` | `sm89-avx512` | `sm89-avx512bf16` | `sm89-avx512vnni` |
+| **SM86 (Ampere)** | `sm86-avx2` | `sm86-avx512` | `sm86-avx512bf16` | `sm86-avx512vnni` |
+| **SM80 (Ampere DC)** | `sm80-avx2` | `sm80-avx512` | `sm80-avx512bf16` | `sm80-avx512vnni` |
+
+All x86 packages follow the pattern: `torchaudio-python313-cuda13_0-{gpu}-{cpu}`
+
+**Note:** SM110 (DRIVE Thor) and SM121 (DGX Spark) are ARM-only platforms and do not have x86 variants.
+
+#### GPU Variants (ARM) — 4 total
+
+| GPU Architecture | ARMv8.2 | ARMv9 |
+|------------------|---------|-------|
+| **SM121 (DGX Spark)** | `sm121-armv8_2` | `sm121-armv9` |
+| **SM110 (DRIVE Thor)** | `sm110-armv8_2` | `sm110-armv9` |
+
+ARM variants are available for GPU architectures with ARM deployment targets (DGX Spark with Grace CPU, DRIVE Thor).
+
+#### CPU-Only Variants (x86-64) — 4 total
+
+| CPU ISA | Package Name | Use Case |
+|---------|--------------|----------|
+| AVX2 | `torchaudio-python313-cpu-avx2` | Broad compatibility, development |
+| AVX-512 | `torchaudio-python313-cpu-avx512` | General workloads |
+| AVX-512 BF16 | `torchaudio-python313-cpu-avx512bf16` | BF16 training on CPU |
+| AVX-512 VNNI | `torchaudio-python313-cpu-avx512vnni` | INT8 inference on CPU |
 
 ### Variants on Other Branches
 
@@ -349,9 +366,9 @@ build-torchaudio/
 ├── .flox/
 │   ├── env/
 │   │   └── manifest.toml          # Build environment definition
-│   └── pkgs/                      # Nix expression builds (12 variants on this branch)
-│       ├── torchaudio-python313-cuda13_0-sm110-*.nix   # 6 SM110 variants (DRIVE Thor)
-│       └── torchaudio-python313-cuda13_0-sm121-*.nix   # 6 SM121 variants (DGX Spark)
+│   └── pkgs/                      # Nix expression builds (36 variants on this branch)
+│       ├── torchaudio-python313-cuda13_0-sm*.nix       # 32 GPU variants (7 x86 archs × 4 ISAs + 2 ARM archs × 2 ISAs)
+│       └── torchaudio-python313-cpu-*.nix              # 4 CPU-only variants
 ├── README.md
 ├── QUICKSTART.md
 ├── BUILD_MATRIX.md
@@ -535,6 +552,7 @@ NIX_BUILD_CORES=8 flox build <variant>
 
 ## Related Documentation
 
+- **[docs/torchaudio-2.x-cuda13-build-notes.md](docs/torchaudio-2.x-cuda13-build-notes.md)** - Detailed build architecture and CUDA 13.0 fixes
 - [PyTorch CUDA Architecture List](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 - [Flox Build Documentation](https://flox.dev/docs/reference/command-reference/flox-build/)
 - [TorchAudio Documentation](https://pytorch.org/audio/stable/index.html)
