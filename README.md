@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `main` branch** — TorchAudio 2.8.0 + PyTorch 2.8.0 + CUDA 12.8 (44 variants)
+> **You are on the `main` branch** — TorchAudio 2.8.0 + PyTorch 2.8.0 + CUDA 12.8 (46 variants)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -20,7 +20,7 @@ This repository provides TorchAudio builds across multiple branches, each target
 
 | Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
 |--------|------------|---------|------|----------|---------------|
-| **`main`** ⬅️ | **2.8.0** | **2.8.0** | **12.8** | **44** | **Stable baseline** |
+| **`main`** ⬅️ | **2.8.0** | **2.8.0** | **12.8** | **46** | **Stable baseline + Darwin/macOS** |
 | `cuda-12_9` | 2.9.1 | 2.9.1 | 12.9.1 | 57 | Full coverage + SM75/SM103 |
 | `cuda-13_0` | TBD | 2.10 | 13.0 | 59 | Full matrix SM75–SM121 + ARM |
 
@@ -36,7 +36,7 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 
 ## Build Matrix (this branch: main)
 
-**This branch builds TorchAudio 2.8.0 with PyTorch 2.8.0 + CUDA 12.8** — 44 variants covering GPU architectures from SM61 (Pascal) to SM120 (Blackwell), plus 6 CPU-only variants.
+**This branch builds TorchAudio 2.8.0 with PyTorch 2.8.0 + CUDA 12.8** — 46 variants covering GPU architectures from SM61 (Pascal) to SM120 (Blackwell), plus 6 CPU-only Linux variants and 2 Darwin/macOS variants.
 
 ### Complete Variant Matrix
 
@@ -201,9 +201,35 @@ Choose the right CPU variant based on your hardware and workload:
 - Choose when: You have Grace, Graviton3+, or other modern ARM processors
 - Detection: `lscpu | grep sve` or `/proc/cpuinfo` shows `sve` and `sve2`
 
+### Darwin / macOS Variants
+
+| Package | GPU | Platform | Requirements |
+|---------|-----|----------|--------------|
+| `torchaudio-python313-mps` | Metal Performance Shaders | aarch64-darwin | macOS 12.3+, M1/M2/M3/M4 |
+| `torchaudio-python313-cpu-darwin` | None (CPU-only) | x86_64-darwin | Intel Mac |
+
+**MPS (Apple Silicon)**
+- Hardware: Apple M1, M2, M3, M4 and variants (Pro, Max, Ultra)
+- Use for: GPU-accelerated training and inference on Apple Silicon
+- Choose when: You have any Apple Silicon Mac
+- BLAS: Apple Accelerate framework
+- Note: MPS provides automatic GPU acceleration for all Apple Silicon - no architecture variants needed
+
+**CPU-Darwin (Intel Mac)**
+- Hardware: Intel Core i5/i7/i9, Xeon Mac Pro
+- Use for: CPU-only workloads on Intel Macs
+- Choose when: You have an Intel-based Mac
+- BLAS: Apple Accelerate framework
+- Note: Intel Macs do not support MPS
+
 ## Variant Selection Guide
 
 ### Quick Decision Tree
+
+**0. Are you on macOS?**
+- Apple Silicon (M1/M2/M3/M4) → Use `torchaudio-python313-mps`
+- Intel Mac → Use `torchaudio-python313-cpu-darwin`
+- Linux → Continue to step 1
 
 **1. Do you have an NVIDIA GPU?**
 - NO → Use CPU-only variant (choose CPU ISA below)
@@ -294,6 +320,18 @@ lscpu | grep sve2  # ✓ Found (Graviton3 has SVE2)
 flox build torchaudio-python313-cuda12_8-sm90-armv9
 ```
 
+**Scenario 5: MacBook Pro M3**
+```bash
+# Apple Silicon - use MPS variant
+flox build torchaudio-python313-mps
+```
+
+**Scenario 6: Intel Mac Pro**
+```bash
+# Intel Mac - use CPU-only Darwin variant
+flox build torchaudio-python313-cpu-darwin
+```
+
 ## Quick Start
 
 ```bash
@@ -377,8 +415,10 @@ build-torchaudio/
 ├── .flox/
 │   ├── env/
 │   │   └── manifest.toml          # Build environment definition
-│   └── pkgs/                      # Nix expression builds (44 variants on main)
-│       ├── torchaudio-python313-cpu-*.nix              # 6 CPU-only variants
+│   └── pkgs/                      # Nix expression builds (46 variants on main)
+│       ├── torchaudio-python313-cpu-*.nix              # 6 CPU-only Linux variants
+│       ├── torchaudio-python313-mps.nix                # 1 MPS variant (Apple Silicon)
+│       ├── torchaudio-python313-cpu-darwin.nix         # 1 CPU-only Darwin variant (Intel Mac)
 │       ├── torchaudio-python313-cuda12_8-sm61-*.nix    # 2 SM61 variants (Pascal)
 │       ├── torchaudio-python313-cuda12_8-sm80-*.nix    # 6 SM80 variants
 │       ├── torchaudio-python313-cuda12_8-sm86-*.nix    # 6 SM86 variants
@@ -543,6 +583,30 @@ Current variants use Python 3.13. To add Python 3.12 or 3.11 variants:
 3. The build will automatically use the correct Python version
 
 ## Troubleshooting
+
+### macOS / Darwin Builds
+
+**Testing MPS variant (Apple Silicon):**
+```bash
+flox build torchaudio-python313-mps
+./result-torchaudio-python313-mps/bin/python -c "
+import torch, torchaudio
+print(f'PyTorch: {torch.__version__}')
+print(f'TorchAudio: {torchaudio.__version__}')
+print(f'MPS available: {torch.backends.mps.is_available()}')
+print(f'MPS built: {torch.backends.mps.is_built()}')
+"
+```
+
+**Testing CPU-darwin variant (Intel Mac):**
+```bash
+flox build torchaudio-python313-cpu-darwin
+./result-torchaudio-python313-cpu-darwin/bin/python -c "
+import torch, torchaudio
+print(f'PyTorch: {torch.__version__}')
+print(f'TorchAudio: {torchaudio.__version__}')
+"
+```
 
 ### Build fails with "CUDA not found"
 
