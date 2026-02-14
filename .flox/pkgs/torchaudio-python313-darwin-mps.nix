@@ -4,9 +4,6 @@
 # macOS build for Apple Silicon (M1/M2/M3/M4) with Metal GPU acceleration
 # Hardware: Apple M1, M2, M3, M4 and variants (Pro, Max, Ultra)
 # Requires: macOS 12.3+
-#
-# Note: Frameworks (Metal, Accelerate, etc.) are provided automatically by
-# apple-sdk_13 via $SDKROOT — no individual framework packages needed.
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -14,43 +11,18 @@ let
   # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
   nixpkgs_pinned = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3.tar.gz";
-    # You can add the sha256 here once known for reproducibility
   }) {
     config = {
       allowUnfree = true;
-      cudaSupport = false;
     };
   };
 
-  # Custom PyTorch with MPS configuration for Apple Silicon
-  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
-    cudaSupport = false;
-  }).overrideAttrs (oldAttrs: {
-    # Limit build parallelism to prevent memory saturation
-    ninjaFlags = [ "-j32" ];
-    requiredSystemFeatures = [ "big-parallel" ];
-
-    # Filter out CUDA deps (base pytorch may include them)
-    buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or "")))
-      (oldAttrs.buildInputs or []);
-    nativeBuildInputs = nixpkgs_pinned.lib.filter (p: p.pname or "" != "addDriverRunpath")
-      (oldAttrs.nativeBuildInputs or []);
-
-    preConfigure = (oldAttrs.preConfigure or "") + ''
-      # Disable CUDA
-      export USE_CUDA=0
-      export USE_CUDNN=0
-      export USE_CUBLAS=0
-
-      # Enable MPS (Metal Performance Shaders)
-      export USE_MPS=1
-      export USE_METAL=1
-
-      # Use vecLib (Apple Accelerate) for BLAS
-      export BLAS=vecLib
-      export MAX_JOBS=32
-    '';
-  });
+  # Import the exact pytorch derivation from build-pytorch
+  # This ensures torchaudio links against the same libtorch as the published pytorch package
+  pytorch_src = builtins.fetchTarball {
+    url = "https://github.com/barstoolbluz/build-pytorch/archive/a4c0e5aba2b881ea0ee0ba5ae5bc224ceaf726d5.tar.gz";
+  };
+  customPytorch = import "${pytorch_src}/.flox/pkgs/pytorch-python313-darwin-mps.nix" {};
 
 in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
