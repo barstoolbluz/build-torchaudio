@@ -88,7 +88,7 @@ in
         Custom TorchAudio build with targeted optimizations:
         - GPU: Metal Performance Shaders (MPS) for Apple Silicon
         - Platform: macOS 12.3+ on M1/M2/M3/M4
-        - BLAS: Apple Accelerate framework
+        - BLAS: vecLib (Apple Accelerate framework)
         - Python: 3.13
       '';
       platforms = [ "aarch64-darwin" ];
