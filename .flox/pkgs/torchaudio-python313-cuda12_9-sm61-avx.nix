@@ -97,6 +97,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA GTX 1070/1080 Ti (SM61, Pascal) with AVX";
       platforms = [ "x86_64-linux" ];

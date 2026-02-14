@@ -72,6 +72,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio optimized for NVIDIA Pascal GTX 10-series (SM61) + AVX2";
       platforms = [ "x86_64-linux" ];
