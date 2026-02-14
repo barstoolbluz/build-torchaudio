@@ -66,6 +66,13 @@ in
 
     meta = oldAttrs.meta // {
       description = "TorchAudio with MPS GPU acceleration for Apple Silicon";
+      longDescription = ''
+        Custom TorchAudio build with targeted optimizations:
+        - GPU: Metal Performance Shaders (MPS) for Apple Silicon
+        - Platform: macOS 12.3+ on M1/M2/M3/M4
+        - BLAS: vecLib (Apple Accelerate framework)
+        - Python: 3.13
+      '';
       platforms = [ "aarch64-darwin" ];
     };
   })
