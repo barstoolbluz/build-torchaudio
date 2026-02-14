@@ -4,11 +4,11 @@
 # macOS build for Apple Silicon (M1/M2/M3/M4) with Metal GPU acceleration
 # Hardware: Apple M1, M2, M3, M4 and variants (Pro, Max, Ultra)
 # Requires: macOS 12.3+
+#
+# Note: Frameworks (Metal, Accelerate, etc.) are provided automatically by
+# apple-sdk_13 via $SDKROOT — no individual framework packages needed.
 
-{ python3Packages
-, lib
-, darwin
-}:
+{ pkgs ? import <nixpkgs> {} }:
 
 let
   # Import nixpkgs at a specific revision where PyTorch 2.8.0 and TorchAudio 2.8.0 are compatible
@@ -18,53 +18,55 @@ let
   }) {
     config = {
       allowUnfree = true;
+      cudaSupport = false;
     };
-    system = "aarch64-darwin";
   };
 
-  # Darwin frameworks for MPS and Accelerate
-  darwinFrameworks = with darwin.apple_sdk.frameworks; [
-    Accelerate
-    Metal
-    MetalPerformanceShaders
-    MetalPerformanceShadersGraph
-    CoreML
-  ];
-
-  # Custom PyTorch with MPS configuration
-  customPytorch = (nixpkgs_pinned.python3Packages.torch.overrideAttrs (oldAttrs: {
+  # Custom PyTorch with MPS configuration for Apple Silicon
+  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
+    cudaSupport = false;
+  }).overrideAttrs (oldAttrs: {
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
+    # Filter out CUDA deps (base pytorch may include them)
     buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or "")))
-      (oldAttrs.buildInputs or []) ++ darwinFrameworks;
+      (oldAttrs.buildInputs or []);
     nativeBuildInputs = nixpkgs_pinned.lib.filter (p: p.pname or "" != "addDriverRunpath")
       (oldAttrs.nativeBuildInputs or []);
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
+      # Disable CUDA
       export USE_CUDA=0
+      export USE_CUDNN=0
+      export USE_CUBLAS=0
+
+      # Enable MPS (Metal Performance Shaders)
       export USE_MPS=1
       export USE_METAL=1
-      export BLAS=Accelerate
+
+      # Use vecLib (Apple Accelerate) for BLAS
+      export BLAS=vecLib
       export MAX_JOBS=32
     '';
-
-    passthru = (oldAttrs.passthru or {}) // {
-      gpuArch = "mps";
-      blasProvider = "accelerate";
-    };
-  }));
+  });
 
 in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
-    torch = customPytorch;  # CRITICAL: "torch", not "pytorch"
+    torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-darwin-mps";
+
+    # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
-    buildInputs = (oldAttrs.buildInputs or []) ++ darwinFrameworks;
+    # Filter out any CUDA deps from torchaudio
+    buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or "")))
+      (oldAttrs.buildInputs or []);
+    nativeBuildInputs = nixpkgs_pinned.lib.filter (p: p.pname or "" != "addDriverRunpath")
+      (oldAttrs.nativeBuildInputs or []);
 
     preConfigure = (oldAttrs.preConfigure or "") + ''
       export MAX_JOBS=32
@@ -74,7 +76,9 @@ in
       echo "========================================="
       echo "GPU Target: MPS (Metal Performance Shaders)"
       echo "Platform: Apple Silicon (aarch64-darwin)"
-      echo "BLAS Backend: Apple Accelerate"
+      echo "BLAS Backend: vecLib (Apple Accelerate)"
+      echo "PyTorch: ${customPytorch.version}"
+      echo "TorchAudio: ${oldAttrs.version}"
       echo "========================================="
     '';
 
