@@ -1,5 +1,5 @@
 # TorchAudio with MPS (Metal Performance Shaders) for Apple Silicon
-# Package name: torchaudio-python313-mps
+# Package name: torchaudio-python313-darwin-mps
 #
 # macOS build for Apple Silicon (M1/M2/M3/M4) with Metal GPU acceleration
 # Requires: macOS 12.3+
@@ -41,7 +41,7 @@ in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
     torch = customPytorch;
   }).overrideAttrs (oldAttrs: {
-    pname = "torchaudio-python313-mps";
+    pname = "torchaudio-python313-darwin-mps";
 
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
