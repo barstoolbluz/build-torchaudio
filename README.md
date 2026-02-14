@@ -387,6 +387,18 @@ customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
 })
 ```
 
+### Catalog Metadata Revision
+
+Every variant includes a `postInstall` block that writes a revision marker to the build output:
+
+```nix
+postInstall = (oldAttrs.postInstall or "") + ''
+  echo 1 > $out/.metadata-rev
+'';
+```
+
+Nix derivation hashes depend on build outputs, not `meta` attributes. Without this marker, metadata-only changes (descriptions, platforms) produce the same store path and the Flox catalog never re-indexes them. Bump the number when changing only metadata.
+
 ### BLAS Library Strategy
 
 | Build Type | BLAS Backend | Notes |
