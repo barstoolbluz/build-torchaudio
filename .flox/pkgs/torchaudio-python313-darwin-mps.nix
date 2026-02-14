@@ -15,27 +15,12 @@ let
     };
   };
 
-  customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
-    cudaSupport = false;
-  }).overrideAttrs (oldAttrs: {
-    ninjaFlags = [ "-j32" ];
-    requiredSystemFeatures = [ "big-parallel" ];
-
-    buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or "")))
-      (oldAttrs.buildInputs or []);
-    nativeBuildInputs = nixpkgs_pinned.lib.filter (p: p.pname or "" != "addDriverRunpath")
-      (oldAttrs.nativeBuildInputs or []);
-
-    preConfigure = (oldAttrs.preConfigure or "") + ''
-      export USE_CUDA=0
-      export USE_CUDNN=0
-      export USE_CUBLAS=0
-      export USE_MPS=1
-      export USE_METAL=1
-      export BLAS=vecLib
-      export MAX_JOBS=32
-    '';
-  });
+  # Import the exact pytorch derivation from build-pytorch
+  # This ensures torchaudio links against the same libtorch as the published pytorch package
+  pytorch_src = builtins.fetchTarball {
+    url = "https://github.com/barstoolbluz/build-pytorch/archive/b3a30ab.tar.gz";
+  };
+  customPytorch = import "${pytorch_src}/.flox/pkgs/pytorch-python313-darwin-mps.nix" {};
 
 in
   (nixpkgs_pinned.python3Packages.torchaudio.override {
