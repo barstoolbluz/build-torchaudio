@@ -66,6 +66,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio CPU-only optimized for ARMv9 (Grace, Graviton3+, SVE2)";
       platforms = [ "aarch64-linux" ];

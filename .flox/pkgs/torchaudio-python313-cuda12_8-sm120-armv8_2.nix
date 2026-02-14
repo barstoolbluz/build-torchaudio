@@ -67,6 +67,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA RTX 5090 (SM120, Blackwell) + ARMv8.2";
       longDescription = ''

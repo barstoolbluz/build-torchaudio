@@ -67,6 +67,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA Ampere RTX 3090/A40 (SM86) + AVX2";
       longDescription = ''

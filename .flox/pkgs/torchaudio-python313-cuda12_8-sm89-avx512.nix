@@ -71,6 +71,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA Ada Lovelace RTX 4090/L40 (SM89) + AVX-512";
       longDescription = ''

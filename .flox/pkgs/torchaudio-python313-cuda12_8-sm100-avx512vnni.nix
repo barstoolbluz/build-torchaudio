@@ -72,6 +72,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA Blackwell B100/B200 (SM100) + AVX-512 VNNI";
       longDescription = ''

@@ -72,6 +72,10 @@ in
       echo "========================================="
     '';
 
+    postInstall = (oldAttrs.postInstall or "") + ''
+      echo 1 > $out/.metadata-rev
+    '';
+
     meta = oldAttrs.meta // {
       description = "TorchAudio for NVIDIA Ampere A100/A30 (SM80) + AVX-512 BF16";
       longDescription = ''
