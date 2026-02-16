@@ -20,7 +20,7 @@ let
   # Import the exact pytorch derivation from build-pytorch
   # This ensures torchaudio links against the same libtorch as the published pytorch package
   pytorch_src = builtins.fetchTarball {
-    url = "https://github.com/barstoolbluz/build-pytorch/archive/a4c0e5aba2b881ea0ee0ba5ae5bc224ceaf726d5.tar.gz";
+    url = "https://github.com/barstoolbluz/build-pytorch/archive/96d3c27ab902dbe5cb973d94f86d5cf51ea4a6df.tar.gz";
   };
   customPytorch = import "${pytorch_src}/.flox/pkgs/pytorch-python313-darwin-mps.nix" {};
 
