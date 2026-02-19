@@ -31,6 +31,11 @@ in
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
+    # Propagate pytorch's main (out) output so the torch Python package
+    # is available in downstream environments. Without .out, Nix's
+    # chooseDevOutputs selects the dev output (headers only, no site-packages).
+    propagatedBuildInputs = (oldAttrs.propagatedBuildInputs or []) ++ [ customPytorch.out ];
+
     preConfigure = (oldAttrs.preConfigure or "") + ''
       export MAX_JOBS=32
 
