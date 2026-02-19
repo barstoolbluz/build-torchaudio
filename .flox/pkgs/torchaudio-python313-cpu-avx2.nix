@@ -40,6 +40,9 @@ in
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cpu-avx2";
 
+    # Propagate pytorch's out output for transitive torch availability
+    propagatedBuildInputs = (oldAttrs.propagatedBuildInputs or []) ++ [ customPytorch.out ];
+
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 

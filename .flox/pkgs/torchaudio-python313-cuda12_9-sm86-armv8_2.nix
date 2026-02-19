@@ -48,6 +48,9 @@ in
   }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda12_9-sm86-armv8_2";
 
+    # Propagate pytorch's out output for transitive torch availability
+    propagatedBuildInputs = (oldAttrs.propagatedBuildInputs or []) ++ [ customPytorch.out ];
+
     # Limit build parallelism to prevent memory saturation
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
