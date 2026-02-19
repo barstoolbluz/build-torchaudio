@@ -100,6 +100,9 @@ EOF
 in
   (nixpkgs_pinned.python3Packages.torchaudio.override { torch = customPytorch; }).overrideAttrs (oldAttrs: {
     pname = "torchaudio-python313-cuda13_0-sm86-avx512bf16";
+
+    # Propagate pytorch's out output for transitive torch availability
+    propagatedBuildInputs = (oldAttrs.propagatedBuildInputs or []) ++ [ customPytorch.out ];
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
     preConfigure = (oldAttrs.preConfigure or "") + ''
