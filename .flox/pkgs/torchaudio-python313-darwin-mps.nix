@@ -34,6 +34,11 @@ in
     ninjaFlags = [ "-j32" ];
     requiredSystemFeatures = [ "big-parallel" ];
 
+    # Propagate pytorch's main (out) output so the torch Python package
+    # is available in downstream environments. Without .out, Nix's
+    # chooseDevOutputs selects the dev output (headers only, no site-packages).
+    propagatedBuildInputs = (oldAttrs.propagatedBuildInputs or []) ++ [ customPytorch.out ];
+
     # Filter out any CUDA deps from torchaudio
     buildInputs = nixpkgs_pinned.lib.filter (p: !(nixpkgs_pinned.lib.hasPrefix "cuda" (p.pname or "")))
       (oldAttrs.buildInputs or []);
