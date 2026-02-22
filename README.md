@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `cuda-12_9` branch** — TorchAudio 2.9.1 + PyTorch 2.9.1 + CUDA 12.9.1 (58 variants)
+> **You are on the `pytorch-2.9` branch** — TorchAudio 2.9.1 + PyTorch 2.9.1 + CUDA 12.9.1 (58 variants)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -21,8 +21,8 @@ This repository provides TorchAudio builds across multiple branches, each target
 | Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
 |--------|------------|---------|------|----------|---------------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | 45 | Stable baseline |
-| **`cuda-12_9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **58** | **This branch** — Full coverage + SM75/SM103 (B300) |
-| `cuda-13_0` | TBD | 2.10 | 13.0 | 111 | Full matrix SM75–SM121 + ARM |
+| **`pytorch-2.9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **58** | **This branch** — Full coverage + SM75/SM103 (B300) |
+| `pytorch-2.10` | TBD | 2.10 | 13.0 | 111 | Full matrix SM75–SM121 + ARM |
 
 Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
@@ -31,10 +31,10 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 | Branch | TorchAudio | PyTorch | CUDA | cuDNN | Python | Min Driver | Nixpkgs Pin |
 |--------|------------|---------|------|-------|--------|------------|-------------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | 9.x | 3.13 | 550+ | [`fe5e41d`](https://github.com/NixOS/nixpkgs/tree/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3) |
-| **`cuda-12_9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **9.13.0** | **3.13** | **550+** | [**`6a030d5`**](https://github.com/NixOS/nixpkgs/tree/6a030d535719c5190187c4cec156f335e95e3211) |
-| `cuda-13_0` | TBD | 2.10 | 13.0 | TBD | 3.13 | 570+ | TBD |
+| **`pytorch-2.9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **9.13.0** | **3.13** | **550+** | [**`6a030d5`**](https://github.com/NixOS/nixpkgs/tree/6a030d535719c5190187c4cec156f335e95e3211) |
+| `pytorch-2.10` | TBD | 2.10 | 13.0 | TBD | 3.13 | 570+ | TBD |
 
-## Build Matrix (this branch: cuda-12_9)
+## Build Matrix (this branch: pytorch-2.9)
 
 **This branch builds TorchAudio 2.9.1 with PyTorch 2.9.1 + CUDA 12.9.1** — 58 variants covering all GPU architectures plus SM75 (Turing) and SM103 (B300).
 
@@ -107,20 +107,20 @@ Different TorchAudio + PyTorch + CUDA combinations live on dedicated branches:
 | Branch | TorchAudio | PyTorch | CUDA | Architectures | Variants |
 |--------|------------|---------|------|---------------|----------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 45 (stable baseline) |
-| **`cuda-12_9`** ⬅️ | 2.9.1 | 2.9.1 | 12.9.1 | SM61–SM120, SM75, SM103, CPU | 58 (this branch) |
-| `cuda-13_0` | TBD | 2.10 | 13.0 | SM75–SM121 + ARM | 111 |
+| **`pytorch-2.9`** ⬅️ | 2.9.1 | 2.9.1 | 12.9.1 | SM61–SM120, SM75, SM103, CPU | 58 (this branch) |
+| `pytorch-2.10` | TBD | 2.10 | 13.0 | SM75–SM121 + ARM | 111 |
 
 ```bash
 # TorchAudio 2.8.0 + PyTorch 2.8.0 + CUDA 12.8 (stable baseline)
 git checkout main && flox build torchaudio-python313-cuda12_8-sm90-avx512
 
 # TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (DGX Spark, DRIVE Thor)
-git checkout cuda-13_0 && flox build torchaudio-python313-cuda13_0-sm121-avx512
+git checkout pytorch-2.10 && flox build torchaudio-python313-cuda13_0-sm121-avx512
 ```
 
 ### GPU Architecture Reference
 
-**SM121 (DGX Spark) - Compute Capability 12.1** *(cuda-13_0 branch)*
+**SM121 (DGX Spark) - Compute Capability 12.1** *(pytorch-2.10 branch)*
 - Specialized Datacenter: DGX Spark
 - Driver: NVIDIA 570+
 - CUDA: Requires 12.9+ (nvcc 12.8 does not recognize sm_121)
@@ -130,7 +130,7 @@ git checkout cuda-13_0 && flox build torchaudio-python313-cuda13_0-sm121-avx512
 - Driver: NVIDIA 570+
 - Note: Requires PyTorch 2.7+ or nightly builds
 
-**SM110 (Blackwell Thor/NVIDIA DRIVE) - Compute Capability 11.0** *(cuda-13_0 branch)*
+**SM110 (Blackwell Thor/NVIDIA DRIVE) - Compute Capability 11.0** *(pytorch-2.10 branch)*
 - Automotive/Edge: NVIDIA DRIVE platforms (Thor, Orin+)
 - Driver: NVIDIA 550+
 - CUDA: Requires 13.0+ (nvcc 12.8 does not recognize sm_110)
@@ -594,7 +594,7 @@ Ensure you're building on a Linux system. GPU builds are Linux-only.
 
 Verify the SM architecture is supported by your CUDA version:
 - SM103 requires CUDA 12.9+ (this branch)
-- SM110/SM121 require CUDA 13.0+ (cuda-13_0 branch)
+- SM110/SM121 require CUDA 13.0+ (pytorch-2.10 branch)
 
 ### CPU build performance is poor
 
