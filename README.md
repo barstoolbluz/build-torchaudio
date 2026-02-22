@@ -20,7 +20,7 @@ This repository provides TorchAudio builds across multiple branches, each target
 
 | Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
 |--------|------------|---------|------|----------|---------------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | 44 | Stable baseline |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | 46 | Stable baseline |
 | **`cuda-12_9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **57** | **This branch** — Full coverage + SM75/SM103 (B300) |
 | `cuda-13_0` | TBD | 2.10 | 13.0 | 59 | Full matrix SM75–SM121 + ARM |
 
@@ -106,7 +106,7 @@ Different TorchAudio + PyTorch + CUDA combinations live on dedicated branches:
 
 | Branch | TorchAudio | PyTorch | CUDA | Architectures | Variants |
 |--------|------------|---------|------|---------------|----------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 44 (stable baseline) |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 46 (stable baseline) |
 | **`cuda-12_9`** ⬅️ | 2.9.1 | 2.9.1 | 12.9.1 | SM61–SM120, SM75, SM103, CPU | 57 (this branch) |
 | `cuda-13_0` | TBD | 2.10 | 13.0 | SM75–SM121 + ARM | 59 |
 
