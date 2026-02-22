@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `cuda-13_0` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (59 variants)
+> **You are on the `cuda-13_0` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (111 variants: 59 standard + 52 nomagma)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -20,9 +20,9 @@ This repository provides TorchAudio builds across multiple branches, each target
 
 | Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
 |--------|------------|---------|------|----------|---------------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | 44 | Stable baseline |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | 46 | Stable baseline |
 | `cuda-12_9` | 2.9.1 | 2.9.1 | 12.9.1 | 57 | Full coverage + SM75/SM103 |
-| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **59** | **This branch** — Full SM75–SM121 coverage |
+| **`cuda-13_0`** ⬅️ | **TBD** | **2.10** | **13.0** | **111** | **This branch** — Full SM75–SM121 + nomagma variants |
 
 Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
@@ -38,10 +38,31 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 
 **This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — full coverage of all GPU architectures from SM75 (Turing) through SM121 (DGX Spark).
 
-### Complete Variant Matrix — 59 Variants
+### Complete Variant Matrix — 111 Variants (59 Standard + 52 NoMAGMA)
 
 *Package pattern: `torchaudio-python313-cuda13_0-{gpu}-{cpu}` | CPU-only: `torchaudio-python313-cpu-{cpu}`*
+*NoMAGMA variants: append `-nomagma` to any CUDA package name*
 *Click package names to view build recipes.*
+
+#### MAGMA vs NoMAGMA Variants
+
+Each CUDA variant is available in two versions:
+
+| Variant | MAGMA | Use Case | Example |
+|---------|-------|----------|---------|
+| **Standard** | Enabled | Research, `torch.linalg` heavy workloads | `sm90-avx512` |
+| **NoMAGMA** | Disabled (uses cuSOLVER) | Inference, standard training | `sm90-avx512-nomagma` |
+
+**When to use NoMAGMA variants:**
+- Production inference deployments
+- Training with standard optimizers (Adam, SGD)
+- Smaller package size desired
+- Faster build times
+
+**When to use Standard (MAGMA-enabled) variants:**
+- Research using `torch.linalg.eig`, `torch.svd`, `torch.linalg.solve`
+- Scientific computing workloads
+- Batched linear algebra operations
 
 | GPU | CPU ISA | Package | Use Case |
 |-----|---------|---------|----------|
@@ -105,13 +126,35 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 | **SM121 (DGX Spark)** | ARMv8.2 | [`sm121-armv8_2`](.flox/pkgs/torchaudio-python313-cuda13_0-sm121-armv8_2.nix) | DGX Spark + Graviton2/older ARM |
 | | ARMv9 | [`sm121-armv9`](.flox/pkgs/torchaudio-python313-cuda13_0-sm121-armv9.nix) | DGX Spark + Grace/Graviton3+ |
 
+#### NoMAGMA Variants (52 variants)
+
+Every CUDA variant above has a corresponding `-nomagma` variant. These disable MAGMA and use cuSOLVER for linear algebra operations.
+
+**Pattern:** Append `-nomagma` to any CUDA package name
+
+| Standard Variant | NoMAGMA Variant | Recipe |
+|-----------------|-----------------|--------|
+| `sm90-avx512` | `sm90-avx512-nomagma` | [`sm90-avx512-nomagma`](.flox/pkgs/torchaudio-python313-cuda13_0-sm90-avx512-nomagma.nix) |
+| `sm89-avx512` | `sm89-avx512-nomagma` | [`sm89-avx512-nomagma`](.flox/pkgs/torchaudio-python313-cuda13_0-sm89-avx512-nomagma.nix) |
+| `sm86-avx2` | `sm86-avx2-nomagma` | [`sm86-avx2-nomagma`](.flox/pkgs/torchaudio-python313-cuda13_0-sm86-avx2-nomagma.nix) |
+| `sm80-armv9` | `sm80-armv9-nomagma` | [`sm80-armv9-nomagma`](.flox/pkgs/torchaudio-python313-cuda13_0-sm80-armv9-nomagma.nix) |
+| ... | ... | *52 total nomagma variants* |
+
+```bash
+# Build a nomagma variant
+flox build torchaudio-python313-cuda13_0-sm90-avx512-nomagma
+
+# List all nomagma variants
+ls .flox/pkgs/*-nomagma.nix
+```
+
 ### Variants on Other Branches
 
 Different TorchAudio + PyTorch + CUDA combinations live on dedicated branches:
 
 | Branch | TorchAudio | PyTorch | CUDA | Architectures | Variants |
 |--------|------------|---------|------|---------------|----------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 44 (stable baseline) |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 46 (stable baseline) |
 | `cuda-12_9` | 2.9.1 | **2.9.1** | **12.9.1** | SM61–SM120 + SM75/SM103 | **57** (recommended) |
 
 ```bash
@@ -139,7 +182,7 @@ git checkout main && flox build torchaudio-python313-cuda12_8-sm90-avx512
 - Driver: NVIDIA 550+
 - CUDA: Requires 13.0+ (nvcc 12.8 does not recognize sm_110)
 
-**SM103 (Blackwell B300 Datacenter) - Compute Capability 10.3** *(cuda-12_9 branch)*
+**SM103 (Blackwell B300 Datacenter) - Compute Capability 10.3** *(cuda-12_9+ branches)*
 - Datacenter: B300
 - Driver: NVIDIA 550+
 - CUDA: Requires 12.9+ (nvcc 12.8 does not recognize sm_103)
@@ -292,7 +335,7 @@ grep -E 'avx|sve' /proc/cpuinfo
 lscpu | grep avx512f  # ✓ Found AVX-512
 
 # Build variant
-flox build torchaudio-python313-cuda12_8-sm86-avx512
+flox build torchaudio-python313-cuda13_0-sm86-avx512
 ```
 
 **Scenario 2: H100 Datacenter + AMD EPYC Zen 4**
@@ -301,10 +344,10 @@ flox build torchaudio-python313-cuda12_8-sm86-avx512
 lscpu | grep avx512_vnni  # ✓ Found for INT8 inference
 
 # For training
-flox build torchaudio-python313-cuda12_8-sm90-avx512
+flox build torchaudio-python313-cuda13_0-sm90-avx512
 
 # For INT8 inference
-flox build torchaudio-python313-cuda12_8-sm90-avx512vnni
+flox build torchaudio-python313-cuda13_0-sm90-avx512vnni
 ```
 
 **Scenario 3: Development Laptop (no GPU)**
@@ -319,7 +362,7 @@ flox build torchaudio-python313-cpu-avx2
 lscpu | grep sve2  # ✓ Found (Graviton3 has SVE2)
 
 # Build variant
-flox build torchaudio-python313-cuda12_8-sm90-armv9
+flox build torchaudio-python313-cuda13_0-sm90-armv9
 ```
 
 ## Quick Start
@@ -390,6 +433,18 @@ customPytorch = (nixpkgs_pinned.python3Packages.torch.override {
 })
 ```
 
+### Catalog Metadata Revision
+
+Every variant includes a `postInstall` block that writes a revision marker to the build output:
+
+```nix
+postInstall = (oldAttrs.postInstall or "") + ''
+  echo 1 > $out/.metadata-rev
+'';
+```
+
+Nix derivation hashes depend on build outputs, not `meta` attributes. Without this marker, metadata-only changes (descriptions, platforms) produce the same store path and the Flox catalog never re-indexes them. Bump the number when changing only metadata.
+
 ### BLAS Library Strategy
 
 | Build Type | BLAS Backend | Notes |
@@ -405,9 +460,10 @@ build-torchaudio/
 ├── .flox/
 │   ├── env/
 │   │   └── manifest.toml          # Build environment definition
-│   └── pkgs/                      # Nix expression builds (59 variants on this branch)
-│       ├── torchaudio-python313-cuda13_0-sm*.nix       # 36 GPU variants (8 x86 archs × 4 ISAs + 2 ARM archs × 2 ISAs)
-│       └── torchaudio-python313-cpu-*.nix              # 5 CPU-only variants
+│   └── pkgs/                      # Nix expression builds (111 variants on this branch)
+│       ├── torchaudio-python313-cuda13_0-sm*.nix       # 52 GPU variants
+│       ├── torchaudio-python313-cuda13_0-sm*-nomagma.nix  # 52 GPU nomagma variants
+│       └── torchaudio-python313-cpu-*.nix              # 7 CPU-only variants
 ├── README.md
 ├── QUICKSTART.md
 ├── BUILD_MATRIX.md
