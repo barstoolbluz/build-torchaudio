@@ -85,12 +85,13 @@ Build Variant = f(Python_Version, GPU_Architecture, CPU_ISA, CUDA_Toolkit)
 
 | CUDA Version | Min Driver (Linux) | SM121 | SM120 | SM110 | SM90 | SM89 | SM86 | Notes |
 |--------------|-------------------|-------|-------|-------|------|------|------|-------|
-| **13.0** | 580+ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Latest, removes SM 5.x-7.0 |
+| **13.1** | 580+ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Latest CUDA 13.x |
+| **13.0** | 580+ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Removes SM 5.x-7.0 |
 | **12.9** | 575+ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Latest 12.x |
 | **12.8** | 570+ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | PyTorch 2.7 default |
 | **12.6** | 560+ | ✅** | ✅** | ✅ | ✅ | ✅ | ✅ | Stable |
 
-**Current Implementation:** CUDA 12.8 (default)
+**Current Implementation:** CUDA 13.0 and 13.1 (this branch)
 
 **Naming:** Package names currently use `cuda12_8` in the middle (e.g., `torchaudio-python313-cuda12_8-sm120-avx512`)
 
@@ -98,14 +99,21 @@ Build Variant = f(Python_Version, GPU_Architecture, CPU_ISA, CUDA_Toolkit)
 
 ### Total Build Matrix
 
-**Total possible variants:** 111 (59 standard + 52 nomagma)
+**Total possible variants:** 215 (111 CUDA 13.0 + 104 CUDA 13.1)
+
+**CUDA 13.0 variants:** 111
 - **GPU builds (standard):** 52
   - Full coverage (SM75–SM103, SM120): 8 architectures × 6 CPU ISAs = 48
   - ARM-only (SM110, SM121): 2 architectures × 2 CPU ISAs = 4
 - **GPU builds (nomagma):** 52 (all CUDA variants including SM110/SM121 ARM)
 - **CPU-only builds:** 7 (avx, avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
 
-**Currently implemented:** 111/111 (100% ✅ COMPLETE)
+**CUDA 13.1 variants:** 104
+- **GPU builds (standard):** 52 (same matrix as CUDA 13.0)
+- **GPU builds (nomagma):** 52 (same matrix as CUDA 13.0)
+- Uses nixpkgs pin `2017d6d5` with `cudaPackages_13_1`
+
+**Currently implemented:** 215/215 (100% ✅ COMPLETE)
 
 ### MAGMA vs NoMAGMA Variants
 

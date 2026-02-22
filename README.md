@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `pytorch-2.10` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0 (111 variants: 59 standard + 52 nomagma)
+> **You are on the `pytorch-2.10` branch** — TorchAudio TBD + PyTorch 2.10 + CUDA 13.0/13.1 (215 variants: 111 CUDA 13.0 + 104 CUDA 13.1)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -22,7 +22,7 @@ This repository provides TorchAudio builds across multiple branches, each target
 |--------|------------|---------|------|----------|---------------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | 45 | Stable baseline |
 | `pytorch-2.9` | 2.9.1 | 2.9.1 | 12.9.1 | 58 | Full coverage + SM75/SM103 |
-| **`pytorch-2.10`** ⬅️ | **TBD** | **2.10** | **13.0** | **111** | **This branch** — Full SM75–SM121 + nomagma variants |
+| **`pytorch-2.10`** ⬅️ | **TBD** | **2.10** | **13.0 / 13.1** | **215** | **This branch** — Full SM75–SM121 + nomagma + dual CUDA |
 
 Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
@@ -32,13 +32,17 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 |--------|------------|---------|------|-------|--------|------------|-------------|
 | `main` | 2.8.0 | 2.8.0 | 12.8 | 9.x | 3.13 | 550+ | [`fe5e41d`](https://github.com/NixOS/nixpkgs/tree/fe5e41d7ffc0421f0913e8472ce6238ed0daf8e3) |
 | `pytorch-2.9` | 2.9.1 | 2.9.1 | 12.9.1 | 9.13.0 | 3.13 | 550+ | [`6a030d5`](https://github.com/NixOS/nixpkgs/tree/6a030d535719c5190187c4cec156f335e95e3211) |
-| **`pytorch-2.10`** ⬅️ | **TBD** | **2.10** | **13.0** | **TBD** | **3.13** | **570+** | **TBD** |
+| **`pytorch-2.10`** ⬅️ | **TBD** | **2.10** | **13.0** | **9.x** | **3.13** | **570+** | [`6a030d5`](https://github.com/NixOS/nixpkgs/tree/6a030d535719c5190187c4cec156f335e95e3211) |
+| **`pytorch-2.10`** ⬅️ | **TBD** | **2.10** | **13.1** | **9.x** | **3.13** | **570+** | [`2017d6d`](https://github.com/NixOS/nixpkgs/tree/2017d6d515f8a7b289fe06d3a880a7ec588c3900) |
 
 ## Build Matrix (this branch: pytorch-2.10)
 
-**This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0** — full coverage of all GPU architectures from SM75 (Turing) through SM121 (DGX Spark).
+**This branch builds TorchAudio TBD with PyTorch 2.10 + CUDA 13.0/13.1** — 215 variants covering all GPU architectures from SM75 (Turing) through SM121 (DGX Spark).
 
-### Complete Variant Matrix — 111 Variants (59 Standard + 52 NoMAGMA)
+- **CUDA 13.0 variants**: 52 standard + 52 nomagma + 7 CPU = 111 total
+- **CUDA 13.1 variants**: 52 standard + 52 nomagma = 104 total
+
+### Complete Variant Matrix — CUDA 13.0 (111 Variants: 59 Standard + 52 NoMAGMA)
 
 *Package pattern: `torchaudio-python313-cuda13_0-{gpu}-{cpu}` | CPU-only: `torchaudio-python313-cpu-{cpu}`*
 *NoMAGMA variants: append `-nomagma` to any CUDA package name*
@@ -146,6 +150,20 @@ flox build torchaudio-python313-cuda13_0-sm90-avx512-nomagma
 
 # List all nomagma variants
 ls .flox/pkgs/*-nomagma.nix
+```
+
+### CUDA 13.1 Variants — 104 GPU Variants (52 Standard + 52 NoMAGMA)
+
+*Same GPU/CPU matrix as CUDA 13.0, with package pattern: `torchaudio-python313-cuda13_1-{gpu}-{cpu}[-nomagma]`*
+
+CUDA 13.1 variants use nixpkgs pin [`2017d6d`](https://github.com/NixOS/nixpkgs/tree/2017d6d515f8a7b289fe06d3a880a7ec588c3900) with `cudaPackages_13_1`.
+
+```bash
+# Example: Build CUDA 13.1 variant
+flox build torchaudio-python313-cuda13_1-sm90-avx512
+
+# Example: Build CUDA 13.1 nomagma variant
+flox build torchaudio-python313-cuda13_1-sm90-avx512-nomagma
 ```
 
 ### Variants on Other Branches
@@ -371,11 +389,14 @@ flox build torchaudio-python313-cuda13_0-sm90-armv9
 # Enter the build environment
 flox activate
 
-# Build a specific variant
+# Build a CUDA 13.0 variant
 flox build torchaudio-python313-cuda13_0-sm90-avx512
 
-# The result will be in ./result-torchaudio-python313-cuda13_0-sm90-avx512/
-ls -lh result-torchaudio-python313-cuda13_0-sm90-avx512/
+# Build a CUDA 13.1 variant
+flox build torchaudio-python313-cuda13_1-sm90-avx512
+
+# The result will be in ./result-torchaudio-python313-cuda13_X-sm90-avx512/
+ls -lh result-torchaudio-python313-cuda13_1-sm90-avx512/
 
 # Test the build
 ./result-torchaudio-python313-cuda13_0-sm90-avx512/bin/python -c "
@@ -460,9 +481,10 @@ build-torchaudio/
 ├── .flox/
 │   ├── env/
 │   │   └── manifest.toml          # Build environment definition
-│   └── pkgs/                      # Nix expression builds (111 variants on this branch)
+│   └── pkgs/                      # Nix expression builds (215 variants on this branch)
 │       ├── torchaudio-python313-cuda13_0-sm*.nix       # 52 GPU variants
 │       ├── torchaudio-python313-cuda13_0-sm*-nomagma.nix  # 52 GPU nomagma variants
+│       ├── torchaudio-python313-cuda13_1-*.nix         # 104 CUDA 13.1 variants (52 + 52 nomagma)
 │       └── torchaudio-python313-cpu-*.nix              # 7 CPU-only variants
 ├── README.md
 ├── QUICKSTART.md
