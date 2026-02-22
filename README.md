@@ -1,6 +1,6 @@
 # TorchAudio Custom Build Environment
 
-> **You are on the `cuda-12_9` branch** — TorchAudio 2.9.1 + PyTorch 2.9.1 + CUDA 12.9.1 (57 variants)
+> **You are on the `cuda-12_9` branch** — TorchAudio 2.9.1 + PyTorch 2.9.1 + CUDA 12.9.1 (58 variants)
 
 This Flox environment builds custom TorchAudio variants with targeted optimizations for specific GPU architectures and CPU instruction sets. Each variant pairs with a matching PyTorch build from `build-pytorch`.
 
@@ -20,9 +20,9 @@ This repository provides TorchAudio builds across multiple branches, each target
 
 | Branch | TorchAudio | PyTorch | CUDA | Variants | Key Additions |
 |--------|------------|---------|------|----------|---------------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | 46 | Stable baseline |
-| **`cuda-12_9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **57** | **This branch** — Full coverage + SM75/SM103 (B300) |
-| `cuda-13_0` | TBD | 2.10 | 13.0 | 59 | Full matrix SM75–SM121 + ARM |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | 45 | Stable baseline |
+| **`cuda-12_9`** ⬅️ | **2.9.1** | **2.9.1** | **12.9.1** | **58** | **This branch** — Full coverage + SM75/SM103 (B300) |
+| `cuda-13_0` | TBD | 2.10 | 13.0 | 111 | Full matrix SM75–SM121 + ARM |
 
 Different GPU architectures require different minimum CUDA versions — SM103 needs CUDA 12.9+, SM110/SM121 need CUDA 13.0+.
 
@@ -36,7 +36,7 @@ Different GPU architectures require different minimum CUDA versions — SM103 ne
 
 ## Build Matrix (this branch: cuda-12_9)
 
-**This branch builds TorchAudio 2.9.1 with PyTorch 2.9.1 + CUDA 12.9.1** — 57 variants covering all GPU architectures plus SM75 (Turing) and SM103 (B300).
+**This branch builds TorchAudio 2.9.1 with PyTorch 2.9.1 + CUDA 12.9.1** — 58 variants covering all GPU architectures plus SM75 (Turing) and SM103 (B300).
 
 ### Complete Variant Matrix
 
@@ -106,9 +106,9 @@ Different TorchAudio + PyTorch + CUDA combinations live on dedicated branches:
 
 | Branch | TorchAudio | PyTorch | CUDA | Architectures | Variants |
 |--------|------------|---------|------|---------------|----------|
-| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 46 (stable baseline) |
-| **`cuda-12_9`** ⬅️ | 2.9.1 | 2.9.1 | 12.9.1 | SM61–SM120, SM75, SM103, CPU | 57 (this branch) |
-| `cuda-13_0` | TBD | 2.10 | 13.0 | SM75–SM121 + ARM | 59 |
+| `main` | 2.8.0 | 2.8.0 | 12.8 | SM61–SM120, CPU | 45 (stable baseline) |
+| **`cuda-12_9`** ⬅️ | 2.9.1 | 2.9.1 | 12.9.1 | SM61–SM120, SM75, SM103, CPU | 58 (this branch) |
+| `cuda-13_0` | TBD | 2.10 | 13.0 | SM75–SM121 + ARM | 111 |
 
 ```bash
 # TorchAudio 2.8.0 + PyTorch 2.8.0 + CUDA 12.8 (stable baseline)
@@ -414,7 +414,7 @@ build-torchaudio/
 ├── .flox/
 │   ├── env/
 │   │   └── manifest.toml          # Build environment definition
-│   └── pkgs/                      # Nix expression builds (57 variants on this branch)
+│   └── pkgs/                      # Nix expression builds (58 variants on this branch)
 │       ├── torchaudio-python313-cpu-*.nix              # 7 CPU-only variants (including AVX)
 │       ├── torchaudio-python313-cuda12_9-sm61-*.nix    # 2 SM61 variants (Pascal)
 │       ├── torchaudio-python313-cuda12_9-sm75-*.nix    # 6 SM75 variants (Turing)
