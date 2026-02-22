@@ -98,13 +98,29 @@ Build Variant = f(Python_Version, GPU_Architecture, CPU_ISA, CUDA_Toolkit)
 
 ### Total Build Matrix
 
-**Total possible variants:** 60
-- **GPU builds:** 54 (9 GPU architectures × 6 CPU ISAs)
-  - x86-64: 36 (9 GPU × 4 CPU ISAs)
-  - ARM: 18 (9 GPU × 2 CPU ISAs)
-- **CPU-only builds:** 6 (6 CPU ISAs)
+**Total possible variants:** 111 (59 standard + 52 nomagma)
+- **GPU builds (standard):** 52
+  - Full coverage (SM75–SM103, SM120): 8 architectures × 6 CPU ISAs = 48
+  - ARM-only (SM110, SM121): 2 architectures × 2 CPU ISAs = 4
+- **GPU builds (nomagma):** 52 (all CUDA variants including SM110/SM121 ARM)
+- **CPU-only builds:** 7 (avx, avx2, avx512, avx512bf16, avx512vnni, armv8_2, armv9)
 
-**Currently implemented:** 60/60 (100% ✅ COMPLETE)
+**Currently implemented:** 111/111 (100% ✅ COMPLETE)
+
+### MAGMA vs NoMAGMA Variants
+
+Each CUDA variant is available in two versions:
+
+| Variant Type | MAGMA | Linear Algebra Backend | Use Case |
+|--------------|-------|------------------------|----------|
+| **Standard** | Enabled | MAGMA (GPU-accelerated) | Research, `torch.linalg` heavy workloads |
+| **NoMAGMA** | Disabled | cuSOLVER (NVIDIA) | Inference, standard training, smaller builds |
+
+**NoMAGMA variants:**
+- Append `-nomagma` to any CUDA package name
+- Example: `torchaudio-python313-cuda13_0-sm90-avx512-nomagma`
+- Removes MAGMA dependency, uses cuSOLVER for `torch.linalg` operations
+- Suitable for inference and standard training (most production workloads)
 
 ### Implemented Variants
 
@@ -409,23 +425,28 @@ customPytorch = inputs.build-pytorch.packages.{system}.pytorch-python313-cuda12_
 
 ## Summary
 
-**Current Status:**
-- ✅ SM121: 6/6 variants created (100%)
+**Current Status (Standard Variants):**
+- ✅ SM121: 2/2 variants created (100%) — ARM-only
 - ✅ SM120: 6/6 variants created (100%)
-- ✅ SM110: 6/6 variants created (100%)
+- ✅ SM110: 2/2 variants created (100%) — ARM-only
 - ✅ SM103: 6/6 variants created (100%)
 - ✅ SM100: 6/6 variants created (100%)
 - ✅ SM90: 6/6 variants created (100%)
 - ✅ SM89: 6/6 variants created (100%)
 - ✅ SM86: 6/6 variants created (100%)
 - ✅ SM80: 6/6 variants created (100%)
-- ✅ CPU-only: 6/6 variants created (100%)
+- ✅ SM75: 6/6 variants created (100%)
+- ✅ CPU-only: 7/7 variants created (100%) — includes AVX
 
-**Total Progress: 60/60 (100% ✅ COMPLETE)**
+**NoMAGMA Variants:**
+- ✅ SM75-SM121 nomagma: 52/52 variants created (100%)
 
-**All variants created!** 🎉
+**Total Progress: 111/111 (100% ✅ COMPLETE)**
+
+**All variants created!**
 
 **Pattern Reference:**
 - Pattern Type A (SM121, SM110, SM103, SM100, SM90, SM89, SM80): with gpuArchSM
 - Pattern Type B (SM120, SM86): without gpuArchSM, decimal format
+- NoMAGMA variants: append `-nomagma` suffix, disable MAGMA overlay, add filterMagma
 - Always verify PyTorch pattern before creating variants!
