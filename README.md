@@ -629,7 +629,7 @@ Ensure you're building on a Linux system. GPU builds are Linux-only.
 
 Verify the SM architecture is supported by your CUDA version:
 - SM110/SM121 require CUDA 13.0+ (this branch)
-- SM103 requires CUDA 12.9+ (cuda-12_9 branch)
+- SM103 requires CUDA 12.9+ (cuda-12_9+ branches)
 
 ### CPU build performance is poor
 
