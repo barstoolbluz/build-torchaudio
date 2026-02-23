@@ -24,21 +24,7 @@ let
       # Overlay 1: Use CUDA 13.1
       (final: prev: { cudaPackages = final.cudaPackages_13_1; })
 
-      # Overlay 2: Patch MAGMA for CUDA 13.1 compatibility
-      # This fixes: 'struct cudaDeviceProp' has no member named 'clockRate'
-      (final: prev: {
-        magma = prev.magma.overrideAttrs (oldAttrs: {
-          patches = (oldAttrs.patches or []) ++ [
-            (final.fetchpatch {
-              name = "cuda-13.0-clockrate-fix.patch";
-              url = "https://github.com/icl-utk-edu/magma/commit/235aefb7b064954fce09d035c69907ba8a87cbcd.patch";
-              hash = "sha256-i9InbxD5HtfonB/GyF9nQhFmok3jZ73RxGcIciGBGvU=";
-            })
-          ];
-        });
-      })
-
-      # Overlay 3: Patch OpenCV for CUDA 13.1 compatibility
+      # Overlay 2: Patch OpenCV for CUDA 13.1 compatibility
       # This fixes: 'struct cudaDeviceProp' has no member named 'clockRate' (and others)
       # PR #27636: https://github.com/opencv/opencv/pull/27636
       # Also patches opencv_contrib for thrust::not1 removal (commit 9a9b173)
@@ -66,7 +52,7 @@ let
         });
       })
 
-      # Overlay 4: Upgrade PyTorch to 2.10.0
+      # Overlay 3: Upgrade PyTorch to 2.10.0
       (final: prev: {
         python3Packages = prev.python3Packages.override {
           overrides = pfinal: pprev: {

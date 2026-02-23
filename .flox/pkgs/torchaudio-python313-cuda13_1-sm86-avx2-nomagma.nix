@@ -23,32 +23,7 @@ let
       # Overlay 1: Use CUDA 13.1
       (final: prev: { cudaPackages = final.cudaPackages_13_1; })
 
-      # Overlay 2: Patch MAGMA for CUDA 13.1 compatibility
-
-      # Overlay 2: Patch OpenCV for CUDA 13.1 compatibility
-      (final: prev: {
-        opencv = prev.opencv.overrideAttrs (oldAttrs: {
-          patches = (oldAttrs.patches or []) ++ [
-            (final.fetchpatch {
-              name = "opencv-cuda-13.0-deviceprop-fix.patch";
-              url = "https://github.com/opencv/opencv/commit/f0888a10e8266b2202d930c6974433a421e6f9a7.patch";
-              hash = "sha256-zeDA8K7k6Sff5Xw/9XmqbCg/dhj9iu095rXuZTdj8PY=";
-            })
-          ];
-          postPatch = (oldAttrs.postPatch or "") + ''
-            if [ -d "opencv_contrib" ]; then
-              echo "Patching opencv_contrib for CUDA 13.1 (thrust::not1 removal)..."
-              patch -p2 -d opencv_contrib < ${final.fetchpatch {
-                name = "opencv-contrib-cuda-13.0-videostab-fix.patch";
-                url = "https://github.com/opencv/opencv_contrib/commit/9a9b173cd178e7c07a98896a009c2a2021a6b247.patch";
-                hash = "sha256-W3eBv7HnoUrNBupXAykv5UsHcYG/o9P55VIddRYWrF8=";
-              }}
-            fi
-          '';
-        });
-      })
-
-      # Overlay 3: Upgrade PyTorch to 2.10.0
+      # Overlay 2: Upgrade PyTorch to 2.10.0
       (final: prev: {
         python3Packages = prev.python3Packages.override {
           overrides = pfinal: pprev: {
